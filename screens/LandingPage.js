@@ -19,7 +19,7 @@ export default function LandingPage({ navigation }) {
         <TouchableOpacity
           style={styles.button}
           activeOpacity={0.7}
-          onPress={() => navigation.navigate("TabNavigator")}
+          onPress={() => navigation.navigate("SignIn")}
         >
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
