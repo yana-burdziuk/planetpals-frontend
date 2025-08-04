@@ -26,43 +26,42 @@ export default function LandingPage({ navigation }) {
     setDropdownVisible(false); // on ferme la dropdown
   };
 
-async function submitSignUpForm() {
-  if (!email || !username || !password || !selectedDepartment) {
-    alert("Please fill all fields!");
-    return;
-  }
+  async function submitSignUpForm() {
+    if (!email || !username || !password || !selectedDepartment) {
+      alert("Please fill all fields!");
+      return;
+    }
 
-  if (password !== confirmPassword) {
-    alert("Passwords do not match");
-    return;
-  }
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
 
-  fetch('http://192.168.1.14:3000/users/signup', {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      email,
-      username,
-      password,
-      departmentId: selectedDepartment, // ou l'ID réel si tu as un mapping
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.result) {
-        alert("Account created successfully!");
-        console.log("User token:", data.token);
-        // Ici, tu pourrais rediriger vers une autre page
-      } else {
-        alert(data.error);
-      }
+    fetch("http://192.168.1.14:3000/users/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        username,
+        password,
+        departmentId: selectedDepartment, // ou l'ID réel si tu as un mapping
+      }),
     })
-    .catch((error) => {
-      console.error("Error:", error);
-      alert("Something went wrong");
-    });
-}
-
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.result) {
+          alert("Account created successfully!");
+          console.log("User token:", data.token);
+          // Ici, tu pourrais rediriger vers une autre page
+        } else {
+          alert(data.error);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Something went wrong");
+      });
+  }
 
   return (
     <View style={styles.container}>
@@ -103,7 +102,7 @@ async function submitSignUpForm() {
           onChangeText={setPassword}
           placeholder="Password"
           placeholderTextColor="#999"
-          secureTextEntry={true}// masque les caractères
+          secureTextEntry={true} // masque les caractères
           autoComplete="off" // désactive suggestion iOS
           textContentType="none" // désactive gestionnaire de mots de passe
         />
@@ -117,7 +116,7 @@ async function submitSignUpForm() {
           onChangeText={setConfirmePassword}
           placeholder="Re-enter the password"
           placeholderTextColor="#999"
-          secureTextEntry={true}// masque les caractères
+          secureTextEntry={true} // masque les caractères
           autoComplete="off" // désactive suggestion iOS
           textContentType="none" // désactive gestionnaire de mots de passe
         />
@@ -167,15 +166,13 @@ async function submitSignUpForm() {
       </View>
       <View style={styles.goBackContainer}>
         <Text style={styles.goBackText}>Already have an account ?</Text>
-       {/* à changer pour sign in*/}
-        <TouchableOpacity onPress={() => navigation.navigate("TabNavigator")}> 
+        <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
           <Text style={styles.backToSignIn}>Sign in to your account</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
