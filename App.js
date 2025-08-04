@@ -12,6 +12,15 @@ import SignUpScreen from './screens/SignUpScreen';
 import SignInScreen from './screens/SignInScreen';
 import MyTeam from './screens/MyTeam';
 
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import user from './reducers/user';
+
+// redux store
+const store = configureStore({
+  reducer: { user },
+});
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -42,6 +51,7 @@ function TabNavigator() {
 
 export default function App() {
   return (
+    <Provider store={store}>
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {/* pour arriver sur la page Landing en lancant l'application */}
@@ -50,7 +60,8 @@ export default function App() {
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="TabNavigator" component={TabNavigator} />
       </Stack.Navigator>
-    </NavigationContainer>
+      </NavigationContainer>
+      </Provider>
   );
 }
 
