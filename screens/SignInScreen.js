@@ -23,7 +23,7 @@ export default function SignInScreen({ navigation }) {
       return;
     }
     // a mettre dans .env ?
-    fetch("http://192.168.1.161:3000/users/signin", {
+    fetch("http://192.168.1.14:3000/users/signin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -42,6 +42,7 @@ export default function SignInScreen({ navigation }) {
       navigation.navigate("TabNavigator");
     });
   }
+  
   return (
     <View style={styles.container}>
       <Text style={styles.welcome}>Welcome back!</Text>
