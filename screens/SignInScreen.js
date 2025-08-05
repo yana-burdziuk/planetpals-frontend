@@ -14,6 +14,7 @@ export default function SignInScreen({ navigation }) {
   const dispatch = useDispatch();
   const [credentials, setCredentials] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // pour la possibilité d'afficher ce qu'on écrit dans le password
 
   // sign in function qui sera trigger par onPress
   async function submitSignInForm() {
@@ -21,7 +22,7 @@ export default function SignInScreen({ navigation }) {
       alert("All the fields are mandatory");
       return;
     }
-// a mettre dans .env ?
+    // a mettre dans .env ?
     fetch("http://192.168.1.161:3000/users/signin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -29,18 +30,17 @@ export default function SignInScreen({ navigation }) {
         credentials,
         password,
       }),
-    })
-      .then(async (response) => {
-        // si jamais le backend tombe on peut recuperer l'erreur
-        const data = await response.json();
-        if (!response.ok) {
-          alert(data.message);
-          return;
-        }
-        // on envoie les données dans redux
-        dispatch(loginSuccess(data.user));
-        navigation.navigate("TabNavigator");
-      })
+    }).then(async (response) => {
+      // si jamais le backend tombe on peut recuperer l'erreur
+      const data = await response.json();
+      if (!response.ok) {
+        alert(data.message);
+        return;
+      }
+      // on envoie les données dans redux
+      dispatch(loginSuccess(data.user));
+      navigation.navigate("TabNavigator");
+    });
   }
   return (
     <View style={styles.container}>
@@ -50,28 +50,33 @@ export default function SignInScreen({ navigation }) {
       <TextInput
         style={styles.input}
         value={credentials}
-        onChangeText={setCredentials} // mise à jour du state avec les infos mises
+        onChangeText={setCredentials} // mise à jour du state avec les infos mises dans le champs
         autoCapitalize="none" // sinon ça commence toujours pas une majuscule
       />
-
       <Text style={styles.label}>Password</Text>
       <TextInput
         style={styles.input}
-        secureTextEntry
+        secureTextEntry={!showPassword}
         value={password}
         onChangeText={setPassword}
         autoCapitalize="none"
       />
-
+      <View style={styles.showPassword}>
+        <TouchableOpacity
+          style={[styles.circle, showPassword && styles.checkedCircle]}
+          onPress={() => setShowPassword(!showPassword)}
+        ></TouchableOpacity>
+        <Text style={styles.footerText}>Show password</Text>
+      </View>
       <TouchableOpacity style={styles.button} onPress={submitSignInForm}>
         <Text style={styles.buttonText}>Submit</Text>
       </TouchableOpacity>
-
       <TouchableOpacity>
         <Text style={styles.link}>Forgot your Password ?</Text>
       </TouchableOpacity>
-
-      <Text style={styles.footerText}>Don't have an account yet ?</Text>
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Don't have an account yet ?</Text>
+      </View>
       <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
         <Text style={styles.link}>Sign Up</Text>
       </TouchableOpacity>
@@ -104,7 +109,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#DBDBDB",
     borderRadius: 6,
     paddingHorizontal: 10,
     paddingVertical: 8,
@@ -126,9 +131,34 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 10,
   },
+  footer: {
+    marginTop: 100,
+    color: "#555",
+  },
   footerText: {
     textAlign: "center",
-    marginTop: 25,
     color: "#555",
+  },
+  showPassword: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "40%",
+    marginTop: 10,
+    marginLeft: 5,
+    alignItems: "center"
+  },
+  circle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#DBDBDB",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkedCircle: {
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#0F4B34",
   },
 });

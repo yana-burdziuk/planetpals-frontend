@@ -19,6 +19,8 @@ export default function LandingPage({ navigation }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmePassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // pour la possibilité d'afficher ce qu'on écrit dans le password
+  
 
   // fonctione qu'on appelle lorsqu’un département est sélectionné
   const handleSelect = (dept) => {
@@ -102,7 +104,7 @@ export default function LandingPage({ navigation }) {
           onChangeText={setPassword}
           placeholder="Password"
           placeholderTextColor="#999"
-          secureTextEntry={true} // masque les caractères
+         secureTextEntry={!showPassword}
           autoComplete="off" // désactive suggestion iOS
           textContentType="none" // désactive gestionnaire de mots de passe
         />
@@ -116,12 +118,18 @@ export default function LandingPage({ navigation }) {
           onChangeText={setConfirmePassword}
           placeholder="Re-enter the password"
           placeholderTextColor="#999"
-          secureTextEntry={true} // masque les caractères
+        secureTextEntry={!showPassword}
           autoComplete="off" // désactive suggestion iOS
           textContentType="none" // désactive gestionnaire de mots de passe
         />
       </View>
-
+  <View style={styles.showPassword}>
+                <TouchableOpacity
+                  style={[styles.circle, showPassword && styles.checkedCircle]}
+                  onPress={() => setShowPassword(!showPassword)}
+                ></TouchableOpacity>
+                <Text style={styles.footerText}>Show passwords</Text>
+              </View>
       {/* Department Dropdown */}
       <View style={styles.inputContainer}>
         <Text style={styles.inputFormLabel}>Department</Text>
@@ -176,10 +184,11 @@ export default function LandingPage({ navigation }) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 100,
     flex: 1,
+    padding: 20,
     backgroundColor: "#fff",
-    alignItems: "center", // centrer horizontalement
+    justifyContent: "center", // centrer horizontalement
+    
   },
   welcomeText: {
     alignItems: "center",
@@ -190,13 +199,15 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 10,
-    width: 300,
+    
   },
   inputFormLabel: {
     fontSize: 12,
     fontWeight: "600",
     color: "#0F172A",
     marginBottom: 8,
+    
+    
   },
   buttonContainer: {
     width: "100%",
@@ -224,6 +235,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: "#f9f9f9",
   },
+  showPassword: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "40%",
+    marginTop: 5,
+    marginBottom: 5,
+    marginLeft: 5,
+    alignItems: "center"
+  },
+  circle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#cccccc",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkedCircle: {
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#0F4B34",
+  },
   submitButton: {
     backgroundColor: "#0F4B34",
     paddingVertical: 8, // hauteur du bouton
@@ -232,10 +266,10 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "#0F4B34",
-    paddingVertical: 16, // hauteur du bouton
-    paddingHorizontal: 12, // largeur du bouton
+    paddingVertical: 16, // hauteur de l'input
+    paddingHorizontal: 12, // largeur de l'input
     borderRadius: 8,
-    marginVertical: 10, // que les boutons soient séparés
+    marginVertical: 10, // que les inputs soient séparés
     width: "80%",
   },
   buttonText: {
