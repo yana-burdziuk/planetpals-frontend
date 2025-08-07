@@ -11,6 +11,7 @@ import ProfileScreen from './screens/ProfileScreen';
 import SignUpScreen from './screens/SignUpScreen';
 import SignInScreen from './screens/SignInScreen';
 import MyTeam from './screens/MyTeam';
+import RankingScreen from './screens/RankingScreen';
 
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -34,6 +35,7 @@ function TabNavigator() {
           if (route.name === 'Home') iconName = 'home';
           if (route.name === 'Profile') iconName = 'user';
           if (route.name === 'MyTeam') iconName = 'user';
+          if (route.name === "Rankings") iconName = 'trophy';
           return <FontAwesome name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#2196f3',
@@ -42,6 +44,7 @@ function TabNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Rankings" component={RankingScreen} />
       <Tab.Screen name="MyTeam" component={MyTeam} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     

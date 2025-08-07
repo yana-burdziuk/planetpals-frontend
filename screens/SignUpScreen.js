@@ -82,6 +82,7 @@ export default function LandingPage({ navigation }) {
           onChangeText={setEmail}
           placeholder="Email address"
           placeholderTextColor="#999"
+          autoCapitalize="none"
         />
       </View>
       {/* Username */}
@@ -104,8 +105,8 @@ export default function LandingPage({ navigation }) {
           onChangeText={setPassword}
           placeholder="Password"
           placeholderTextColor="#999"
-         secureTextEntry={!showPassword}
-          autoComplete="off" // désactive suggestion iOS
+          secureTextEntry={!showPassword}
+          // autoComplete="off" // désactive suggestion iOS
           textContentType="none" // désactive gestionnaire de mots de passe
         />
       </View>
