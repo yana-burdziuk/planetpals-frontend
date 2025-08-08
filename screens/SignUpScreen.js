@@ -174,7 +174,7 @@ export default function LandingPage({ navigation }) {
       </View>
       <View style={styles.goBackContainer}>
         <Text style={styles.goBackText}>Already have an account ?</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
+        <TouchableOpacity onPress={() => navigation.navigate("TabNavigator")}>
           <Text style={styles.backToSignIn}>Sign in to your account</Text>
         </TouchableOpacity>
       </View>
