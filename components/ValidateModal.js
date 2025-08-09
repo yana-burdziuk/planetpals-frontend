@@ -17,7 +17,7 @@ export default function ValidateModal({ onClose }) {
 
   // on passe par une fonction et non useEffect car il faut que la demande de permission soit faite quand on clique
   // sur le take a photo et non au montage
-  // c'est async a cause de la demande de permission justement
+  // c'est async a cause de la demande de permission justement 
 
   const grantPermissionTakePicture = async () => {
     // destructuration d'objet au lieu de result.status
