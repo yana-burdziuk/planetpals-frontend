@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View, ScrollView } from "react-native";
 import Header from "../components/Header";
 import ChallengeCard from "../components/ChallengeCard";
+//import ValidateModal from "../components/ValidateModal";
 
 export default function HomeScreen({ navigation }) {
   const pointsCount = 3434 + " pts"; // temporaire
@@ -68,7 +69,6 @@ export default function HomeScreen({ navigation }) {
             done={challenge.done}
           />
         ))}
-
       </ScrollView>
     </View>
   );
