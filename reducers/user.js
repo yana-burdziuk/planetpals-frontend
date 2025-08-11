@@ -1,8 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const initialState = {
-    value: { username: null, isAuthenticated : false, photos : []},
-};
+const initialState = { username: null, isAuthenticated: false, photos: [] };
 
 export const userSlice = createSlice({
   name: 'user',
@@ -14,7 +12,7 @@ export const userSlice = createSlice({
     },
     //stocker les photos ici au cas ou on en a besoin ailleurs dans l'app
     addUserPhoto: (state, action) => {
-  state.value.photos.push(action.payload)
+  state.photos.push(action.payload)
 }
   },
 });

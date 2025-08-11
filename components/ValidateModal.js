@@ -1,23 +1,24 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useState, useEffect, useRef } from "react";
 import { Camera, CameraView } from "expo-camera";
+import * as ImagePicker from "expo-image-picker";
 import { addUserPhoto } from "../reducers/user";
 import { useDispatch, useSelector } from "react-redux";
 
 export default function ValidateModal({ onClose }) {
   const [hasPermission, setHasPermission] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  //un état pour afficher l’image seulement après que l’utilisateur en ait choisi une
+  const [previewImage, setPreviewImage] = useState(null);
   const cameraRef = useRef(null);
 
   const dispatch = useDispatch();
 
-  //recuperation de l'utilisateur connecté
-  const username = useSelector((state) => state.user.value.username);
-
-  // on passe par une fonction et non useEffect car il faut que la demande de permission soit faite quand on clique
+  // on passe par une fonction et non useEffect car il faut
+  // que la demande de permission soit faite quand on clique
   // sur le take a photo et non au montage
-  // c'est async a cause de la demande de permission justement 
+  // c'est async a cause de la demande de permission justement
 
   const grantPermissionTakePicture = async () => {
     // destructuration d'objet au lieu de result.status
@@ -57,9 +58,29 @@ export default function ValidateModal({ onClose }) {
       const data = await response.json();
       if (data?.url) {
         dispatch(addUserPhoto(data.url));
+        setPreviewImage(data.url);
+        setShowCamera(false);
       }
     } catch (error) {
       console.error("Error", error);
+    }
+  };
+
+  //choisir une photo depuis la galérie
+
+  const pickPicture = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      dispatch(addUserPhoto(uri));
+      setPreviewImage(uri); // pour la preview
     }
   };
 
@@ -75,27 +96,45 @@ export default function ValidateModal({ onClose }) {
           </TouchableOpacity>
         </View>
 
+        {/* mode preview ou boutons avec la description */}
+
         {!showCamera && (
           <>
-            <View style={styles.challengeDescription}>
-              {/* sera dynamique quand on va recuperer les challenges*/}
-              <Text>
-                {" "}
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat.{" "}
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={grantPermissionTakePicture}
-            >
-              <Text style={styles.buttonText}>Open camera</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button2}>
-              <Text style={styles.buttonText2}>Upload from your device</Text>
-            </TouchableOpacity>
+            {previewImage ? (
+              <View style={styles.previewContainer}>
+                <Image source={{ uri: previewImage }} style={styles.image} />
+                <TouchableOpacity
+                  style={styles.closePreview}
+                  onPress={() => setPreviewImage(null)}
+                >
+                  <Text style={styles.closePreviewText}> OK </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                <View style={styles.challengeDescription}>
+                  {/* sera dynamique quand on va recuperer les challenges*/}
+                  <Text>
+                    {" "}
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                    do eiusmod tempor incididunt ut labore et dolore magna
+                    aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+                    ullamco laboris nisi ut aliquip ex ea commodo consequat.{" "}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={grantPermissionTakePicture}
+                >
+                  <Text style={styles.buttonText}>Open camera</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button2} onPress={pickPicture}>
+                  <Text style={styles.buttonText2}>
+                    Upload from your device
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
           </>
         )}
 
@@ -194,5 +233,26 @@ const styles = StyleSheet.create({
     backgroundColor: "#dddddd5b",
     width: "90%",
     borderRadius: 6,
+  },
+  previewContainer: {
+    marginTop: 20,
+    position: "relative",
+    alignItems: "center",
+  },
+  closePreview: {
+    marginTop: 15,
+    backgroundColor: "#0F4B34",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 6,
+  },
+  closePreviewText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+  image: {
+    width: 200,
+    height: 200,
+    borderRadius: 10,
   },
 });
