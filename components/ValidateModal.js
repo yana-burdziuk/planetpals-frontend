@@ -41,13 +41,14 @@ export default function ValidateModal({ onClose }) {
         return;
       }
       const photo = await cameraRef.current?.takePictureAsync({ quality: 0.3 });
-      if (!photo || !photo.uri) {
+      const uri = photo.uri;
+      if (!photo || !uri) {
         console.warn("No photo captured");
         return;
-      }
+      } 
       const formData = new FormData();
       formData.append("photoFromFront", {
-        uri: photo.uri,
+        uri,
         name: "photo.jpg",
         type: "image/jpeg",
       });
@@ -56,13 +57,15 @@ export default function ValidateModal({ onClose }) {
         body: formData,
       });
       const data = await response.json();
+      //console.log("Cloudinary URL:", data.url);
+
       if (data?.url) {
         dispatch(addUserPhoto(data.url));
         setPreviewImage(data.url);
         setShowCamera(false);
       }
     } catch (error) {
-      console.error("Error", error);
+      console.error("Photo process failed", error);
     }
   };
 
@@ -74,13 +77,32 @@ export default function ValidateModal({ onClose }) {
       mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.3,
     });
 
     if (!result.canceled) {
       const uri = result.assets[0].uri;
-      dispatch(addUserPhoto(uri));
-      setPreviewImage(uri); // pour la preview
+      const formData = new FormData();
+      formData.append("photoFromFront", {
+        uri,
+        name: "photo.jpg",
+        type: "image/jpeg",
+      });
+      try {
+        const response = await fetch("http://localhost:3000/photo/upload", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await response.json();
+        //console.log("Cloudinary URL:", data.url);
+
+        if (data?.url) {
+          dispatch(addUserPhoto(data.url));
+          setPreviewImage(data.url);
+        }
+      } catch (error) {
+        console.error("Upload failed", error);
+      }
     }
   };
 
@@ -156,7 +178,7 @@ export default function ValidateModal({ onClose }) {
               style={styles.button2}
               onPress={() => setShowCamera(false)}
             >
-              <Text style={styles.buttonText2}>Quit</Text>
+              <Text style={styles.buttonText2}>Cancel</Text>
             </TouchableOpacity>
           </>
         )}
@@ -215,7 +237,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginTop: 10,
     borderWidth: 0.5,
-    borderColor: "#000000",
+    borderColor: "#000",
   },
   buttonText: {
     color: "#fff",
@@ -223,7 +245,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   buttonText2: {
-    color: "#00000",
+    color: "#000",
     fontWeight: "600",
     textAlign: "center",
   },
