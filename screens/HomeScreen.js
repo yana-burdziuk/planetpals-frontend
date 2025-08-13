@@ -2,9 +2,14 @@ import React from "react";
 import { StyleSheet, Text, View, ScrollView } from "react-native";
 import Header from "../components/Header";
 import ChallengeCard from "../components/ChallengeCard";
-//import ValidateModal from "../components/ValidateModal";
+import ValidateModal from "../components/ValidateModal";
+import { useState } from "react";
 
 export default function HomeScreen({ navigation }) {
+  {
+    /*le composant parent va toujours gerer la visibilité de la modale*/
+  }
+  const [showValidateModal, setShowValidateModal] = useState(true);
   const pointsCount = 3434 + " pts"; // temporaire
   const co2Count = 2.5 + " kg"; // temporaire
 
@@ -28,12 +33,11 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       {/* ScrollView pour pouvoir défiler */}
-      <ScrollView 
-        style={styles.scrollContainer} 
+      <ScrollView
+        style={styles.scrollContainer}
         contentContainerStyle={{ alignItems: "center", paddingBottom: 50 }}
         showsVerticalScrollIndicator={false}
       >
-
         {/* Total CO2 */}
         <View style={styles.totalCO2Container}>
           <Text style={styles.CO2ContainerText1}> {co2Count} </Text>
@@ -69,6 +73,9 @@ export default function HomeScreen({ navigation }) {
             done={challenge.done}
           />
         ))}
+        {showValidateModal && (
+          <ValidateModal onClose={() => setShowValidateModal(false)} />
+        )}
       </ScrollView>
     </View>
   );

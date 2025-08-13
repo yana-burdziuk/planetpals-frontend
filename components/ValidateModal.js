@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Camera, CameraView } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import { addUserPhoto } from "../reducers/user";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
 export default function ValidateModal({ onClose }) {
   const [hasPermission, setHasPermission] = useState(false);
@@ -45,7 +45,7 @@ export default function ValidateModal({ onClose }) {
       if (!photo || !uri) {
         console.warn("No photo captured");
         return;
-      } 
+      }
       const formData = new FormData();
       formData.append("photoFromFront", {
         uri,
@@ -111,9 +111,30 @@ export default function ValidateModal({ onClose }) {
       <View style={styles.modal}>
         <View style={styles.header}>
           {/* side placeholder car j'ai pas trouvé comment le mettre au milieu le text*/}
-          <View style={styles.sidePlaceholder} />
+          <View style={styles.sidePlaceholder}>
+            {(previewImage || showCamera) && (
+              <TouchableOpacity
+                onPress={() => {
+                  if (showCamera) {
+                    setShowCamera(false);
+                  } else {
+                    setPreviewImage(null);
+                  }
+                }}
+              >
+                <FontAwesome name="arrow-left" size={24} color="black" />
+              </TouchableOpacity>
+            )}
+          </View>
           <Text style={styles.headerText}>Validate the challenge</Text>
-          <TouchableOpacity onPress={onClose}>
+          {/* réinit les états au cas ou on ferme, pour que cela ne garde pas les photos uploadées/prises*/}
+          <TouchableOpacity
+            onPress={() => {
+              setPreviewImage(null);
+              setShowCamera(false);
+              onClose();
+            }}
+          >
             <FontAwesome name="close" size={24} color="black" />
           </TouchableOpacity>
         </View>
@@ -125,11 +146,18 @@ export default function ValidateModal({ onClose }) {
             {previewImage ? (
               <View style={styles.previewContainer}>
                 <Image source={{ uri: previewImage }} style={styles.image} />
+                {/* bouton pour valider*/}
                 <TouchableOpacity
-                  style={styles.closePreview}
-                  onPress={() => setPreviewImage(null)}
+                  style={styles.submitModal}
+                  onPress={() => {
+                    // faudra declencher la validation côté backend ici
+                    //console.log("Challenge validated: ", previewImage);
+                    setPreviewImage(null);
+                    setShowCamera(false);
+                    onClose();
+                  }}
                 >
-                  <Text style={styles.closePreviewText}> OK </Text>
+                  <Text style={styles.submitModalText}> Submit </Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -261,14 +289,14 @@ const styles = StyleSheet.create({
     position: "relative",
     alignItems: "center",
   },
-  closePreview: {
+  submitModal: {
     marginTop: 15,
     backgroundColor: "#0F4B34",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 6,
   },
-  closePreviewText: {
+  submitModalText: {
     color: "#fff",
     fontWeight: "600",
   },
