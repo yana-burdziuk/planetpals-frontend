@@ -1,8 +1,7 @@
 import React from "react";
-import { StyleSheet, Text, View, ScrollView } from "react-native";
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from "react-native";
 import Header from "../components/Header";
 import ChallengeCard from "../components/ChallengeCard";
-//import ValidateModal from "../components/ValidateModal";
 
 export default function HomeScreen({ navigation }) {
   const pointsCount = 3434 + " pts"; // temporaire
@@ -10,15 +9,25 @@ export default function HomeScreen({ navigation }) {
 
   // Exemple de données (à dynamiser avec l’API plus tard)
   const dailyChallenges = [
-    { title: "Vegetarian meal", points: 150, CO2: 0.8, done: true },
-    { title: "Turn off the PC", points: 150, CO2: 0.8, done: true },
-    { title: "Turn off the light", points: 10, CO2: 0.4, done: false },
+    { id: "d1", title: "Vegetarian meal", points: 150, CO2: 0.8, done: true },
+    { id: "d2", title: "Turn off the PC", points: 150, CO2: 0.8, done: true },
+    { id: "d3", title: "Turn off the light", points: 10, CO2: 0.4, done: false },
   ];
 
   const weeklyChallenges = [
-    { title: "Utiliser sa gourde", points: 150, CO2: 0.8, done: false },
-    { title: "Limiter l’usage de la clim", points: 200, CO2: 1.2, done: false },
+    { id: "w1", title: "Utiliser sa gourde", points: 150, CO2: 0.8, done: false },
+    { id: "w2", title: "Limiter l’usage de la clim", points: 200, CO2: 1.2, done: false },
   ];
+
+  const openDetails = (challenge) => {
+    navigation.navigate("ChallengesScreen", {
+      challengeId: challenge.id,
+      title: challenge.title,
+      points: challenge.points,
+      co2: challenge.CO2,
+      done: challenge.done,
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -36,7 +45,7 @@ export default function HomeScreen({ navigation }) {
 
         {/* Total CO2 */}
         <View style={styles.totalCO2Container}>
-          <Text style={styles.CO2ContainerText1}> {co2Count} </Text>
+          <Text style={styles.CO2ContainerText1}>{co2Count}</Text>
           <Text style={styles.CO2ContainerText2}>
             of CO2 saved by your department so far
           </Text>
@@ -46,28 +55,30 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.dailyTextContainer}>
           <Text style={styles.dailyText}>Daily challenges</Text>
         </View>
-        {dailyChallenges.map((challenge, index) => (
-          <ChallengeCard
-            key={index}
-            title={challenge.title}
-            points={challenge.points}
-            CO2={challenge.CO2}
-            done={challenge.done}
-          />
+        {dailyChallenges.map((challenge) => (
+          <TouchableOpacity key={challenge.id} activeOpacity={0.8} onPress={() => openDetails(challenge)}>
+            <ChallengeCard
+              title={challenge.title}
+              points={challenge.points}
+              CO2={challenge.CO2}
+              done={challenge.done}
+            />
+          </TouchableOpacity>
         ))}
 
         {/* Weekly Challenges */}
         <View style={styles.dailyTextContainer}>
           <Text style={styles.dailyText}>Weekly challenges</Text>
         </View>
-        {weeklyChallenges.map((challenge, index) => (
-          <ChallengeCard
-            key={index}
-            title={challenge.title}
-            points={challenge.points}
-            CO2={challenge.CO2}
-            done={challenge.done}
-          />
+        {weeklyChallenges.map((challenge) => (
+          <TouchableOpacity key={challenge.id} activeOpacity={0.8} onPress={() => openDetails(challenge)}>
+            <ChallengeCard
+              title={challenge.title}
+              points={challenge.points}
+              CO2={challenge.CO2}
+              done={challenge.done}
+            />
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </View>
