@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     borderWidth: 1,
     borderColor: "#f2f2f2ff",
-    width: "80%",
+    width: "90%",
     minHeight: "10%",
   },
   topRow: {

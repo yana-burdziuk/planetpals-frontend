@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     borderColor: "#DBDBDB",
     borderRadius: 15,
     backgroundColor: "#0F4B34",
-    width: "80%",
+    width: "90%",
   },
   CO2ContainerText1: {
     color: "white",
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   dailyTextContainer: {
-    width: "80%",
+    width: "90%",
     alignItems: "flex-start",
     marginTop: 20,
   },
