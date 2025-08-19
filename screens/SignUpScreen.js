@@ -6,9 +6,10 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  ActivityIndicator, // aka spinner chez Expo
 } from "react-native";
 
-const API_URL = "http://192.168.1.14:3000"; // téléphone physique
+const API_URL = "http://192.168.1.125:3000"; // téléphone physique
 
 export default function SignUpScreen({ navigation }) {
   const [departments, setDepartments] = useState([]);
@@ -18,11 +19,11 @@ export default function SignUpScreen({ navigation }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false); // pour la possibilité d'afficher ce qu'on écrit dans le password
-
+  const [loading, setLoading] = useState(false); // spinner
   // fonction pour recuperer tous les departements actifs
 
   const loadDepts = () => {
-    fetch("http://172.20.10.2:3000/depts")
+    fetch(`${API_URL}/depts`)
       .then((response) => response.json())
       .then((data) => {
         if (data.result) {
@@ -44,11 +45,32 @@ export default function SignUpScreen({ navigation }) {
 
   async function submitSignUpForm() {
     if (!email || !username || !password || !selectedDepartment) {
-      alert("Please fill all fields!");
+      alert("Please fill all fields");
       return;
     }
 
-    fetch("http://172.20.10.2:3000/users/signup", {
+    // validation de l'email avec la regex
+    const emailRegexPattern =
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!emailRegexPattern.test(email)) {
+      alert("Please enter a valid email address (ex: your@email.com)");
+      return;
+    }
+
+    // validation du password avec la regex
+    const passwordRegexPattern =
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%&*])[A-Za-z\d!@#$%&*]{8,}$/;
+
+    if (!passwordRegexPattern.test(password)) {
+      alert(
+        "Password must be at least 8 characters long and include letters, numbers and a special character (ex: !@#$%&*)"
+      );
+      return;
+    }
+    setLoading(true);
+
+    fetch(`${API_URL}/users/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -61,14 +83,17 @@ export default function SignUpScreen({ navigation }) {
       .then((response) => response.json())
       .then((data) => {
         if (data.result) {
-          alert("Account created successfully!");
-          //console.log("User token:", data.token);
-          // Ici, on pourrait rediriger vers une autre page
+          setTimeout(() => {
+            setLoading(false)
+            navigation.navigate("TabNavigator");
+          }, 5000); // on attend quelques secondes avec le spinner avant de rediriger
         } else {
+          setLoading(false)
           alert(data.error);
         }
       })
       .catch((error) => {
+        setLoading(false)
         console.error("Error:", error);
         alert("Something went wrong");
       });
@@ -174,6 +199,15 @@ export default function SignUpScreen({ navigation }) {
           <Text style={styles.buttonText}>Submit</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Spinner */}
+      {loading && (
+        <View style={styles.spinner}>
+          <ActivityIndicator size="large" color="#0F4B34" />
+          <Text style={styles.spinnerText}>Creating account...</Text>
+        </View>
+      )}
+
       {/* Links */}
       <View style={styles.goBackContainer}>
         <Text style={styles.goBackText}>Already have an account?</Text>
@@ -305,4 +339,11 @@ const styles = StyleSheet.create({
   footerText: {
     color: "#555",
   },
+  spinner: {
+    marginTop: 20,
+    alignItems: "center" 
+  },
+  spinnerText: {
+    marginTop: 10
+  }
 });

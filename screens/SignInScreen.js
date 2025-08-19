@@ -96,9 +96,9 @@ export default function SignInScreen({ navigation }) {
         </TouchableOpacity>
       </View>
       {/* Links */}
-      <TouchableOpacity>
+      {/* <TouchableOpacity>
         <Text style={styles.backToSignIn}>Forgot your password?</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <View style={styles.goBackContainer}>
         <Text style={styles.goBackText}>Don’t have an account yet?</Text>

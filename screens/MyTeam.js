@@ -9,6 +9,7 @@ export default function MyTeam() {
   const totalPoints = 8500;
   const totalCO2 = 20;
 
+  // TODO : recuperer les users du departement
   const teamMembers = [
     { name: "Yana", points: 3434 },
     { name: "Gilles", points: 2533 },
@@ -45,9 +46,9 @@ export default function MyTeam() {
           {teamMembers.map((member, index) => (
             <View key={index} style={styles.memberCard}>
               <Text style={styles.memberName}>{member.name}</Text>
-              <Text style={styles.memberPoints}>
-                {member.points} <Text style={{ fontWeight: "bold" }}>points</Text>
-              </Text>
+  <Text style={styles.memberPoints}>
+  {member.points} <Text style={styles.pointsBold}>points</Text>
+</Text>
             </View>
           ))}
         </ScrollView>
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
   },
   memberCard: {
     backgroundColor: "#fff",
-    padding: 15,
+    padding: 20,
     marginBottom: 10,
     borderRadius: 10,
     flexDirection: "row",
@@ -124,12 +125,15 @@ const styles = StyleSheet.create({
     color: "#0F172A",
   },
   memberPoints: {
-    fontSize: 14,
-    color: "#0F4B34",
-    backgroundColor: "#CFF7D3", // ui kit figma pour les couleurs
-    borderRadius: 8,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    marginRight: 12,
+   fontSize: 14,
+  color: "#0F4B34",
+  backgroundColor: "#CFF7D3",
+  borderRadius: 8,
+  paddingVertical: 4,
+  paddingHorizontal: 10,
+  marginRight: 12,
   },
+  pointsBold: {
+    fontWeight: "bold",
+  }
 });

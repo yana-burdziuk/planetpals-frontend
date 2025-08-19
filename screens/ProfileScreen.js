@@ -1,13 +1,13 @@
 import React from "react";
-import { TouchableOpacity, StyleSheet, Text, View } from "react-native";
+import { TouchableOpacity, StyleSheet, Text, View, Alert } from "react-native";
 import Header from "../components/Header";
 import Badge from "../components/Badge";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../reducers/user";
 
-export default function ProfileScreen({ }) {
-  
-  // recup depuis le redux 
-
+export default function ProfileScreen({navigation}) {
+  const dispatch = useDispatch();
+  // recup depuis le redux
   const username = useSelector((state) => state.user.username);
   const currentPoints = useSelector((state) => state.user.currentPoints);
 
@@ -21,8 +21,8 @@ export default function ProfileScreen({ }) {
     { name: "🎃", text: "Legendary Pumpkin", points: 2400, disabled: true },
   ];
   // on détermine le prochain palier
-  
-   // on cherche le premier badge dont les points sont superieurs aux points currents de l'utilisateur
+
+  // on cherche le premier badge dont les points sont superieurs aux points currents de l'utilisateur
   // (les badges sont triés par points croissants)
   const nextBadge = existingBadges.find((b) => b.points > currentPoints);
 
@@ -38,18 +38,40 @@ export default function ProfileScreen({ }) {
   }));
 
   // pour compter le nombre de badges
-  const currentBadgeCount = usersBadges.filter((badge) => !badge.disabled).length; // crée le nouveau tableau avec des badges activés (condition respéctée)
+  const currentBadgeCount = usersBadges.filter(
+    (badge) => !badge.disabled
+  ).length; // crée le nouveau tableau avec des badges activés (condition respéctée)
   const totalBadgeCount = existingBadges.length; // le nombre total des badges dans le tableau
 
   // progression : tant qu'il y a ou progresser, on fait score courant / seuil du prochain badge, sinon on met 1 = 100%
-  const progress = nextBadge ? currentPoints / totalPoints : 1 ;
+  const progress = nextBadge ? currentPoints / totalPoints : 1;
 
+  const handleSignOut = () => {
+    Alert.alert("See you soon!", "Are you sure you want to sign out ?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Sign Out",
+        onPress: () => {
+          dispatch(logout());
+          //reset supprime l’historique de navigation 
+          // pour éviter que le user puisse revenir en arrière après le signout
+          navigation.reset({
+            routes:[{name: "SignIn"}] 
+          })
+        },
+        style: "destructive",
+      },
+    ]);
+  };
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.pageHeader}>
-        <Header title="PlanetPals" count={currentPoints}/>
+        <Header title="PlanetPals" count={currentPoints} />
       </View>
 
       {/* profile name */}
@@ -86,11 +108,10 @@ export default function ProfileScreen({ }) {
         ))}
       </View>
       {/* LogOut*/}
-      <View>
-        <TouchableOpacity style={styles.logOut}>
-          <Text style={styles.logOutText}>Log Out</Text>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity onPress={handleSignOut}>
+          <Text style={styles.logOutText}>Sign Out</Text>
         </TouchableOpacity>
-        
       </View>
     </View>
   );
@@ -102,6 +123,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f2f2f2ff",
     alignItems: "center",
+    justifyContent: "space-between"
   },
   pageHeader: {
     width: "100%",
@@ -171,15 +193,14 @@ const styles = StyleSheet.create({
     flexWrap: "wrap", // passer à la ligne, donc prend le max ce qui peut rentrer dans les 90%
     justifyContent: "space-between",
   },
-  logOut: {
-    backgroundColor: "#0F4B34",
-    padding: 5,
-    borderRadius: 6,
+  buttonContainer: {
     marginTop: 20,
+    alignItems: "center",
   },
   logOutText: {
-        color: "#fff",
-    fontWeight: "400",
+    color: "#0F4B34",
+    marginTop: 40,
+    textDecorationLine: "underline",
     textAlign: "center",
-  }
+  },
 });

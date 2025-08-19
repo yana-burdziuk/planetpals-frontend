@@ -13,7 +13,7 @@ const rankings = [
 ];
 
 export default function RankingScreen() {
-  const userPoints = "3434"; // À remplacer par données dynamiques (ex: Redux)
+  const userPoints = 3434; // À remplacer par données dynamiques (ex: Redux)
 
   return (
     <View style={styles.container}>
@@ -32,7 +32,9 @@ export default function RankingScreen() {
           <View key={index} style={styles.rankCard}>
             <Text style={styles.rankNumber}>{index + 1}</Text>
             <Text style={styles.department}>{item.department}</Text>
-            <Text style={styles.points}>{item.points} points</Text>
+            <Text style={styles.points}>
+              {item.points} <Text style={styles.pointsBold}>points</Text>
+            </Text>
           </View>
         ))}
       </ScrollView>
@@ -64,7 +66,6 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 10,
     borderRadius: 15,
-
   },
   rankNumber: {
     fontSize: 20,
@@ -80,14 +81,13 @@ const styles = StyleSheet.create({
   points: {
     fontSize: 14,
     color: "#0F4B34",
-    backgroundColor: "#CFF7D3", // ui kit figma pour les couleurs
+    backgroundColor: "#CFF7D3",
     borderRadius: 8,
     paddingVertical: 4,
     paddingHorizontal: 10,
     marginRight: 12,
-    fontWeight: "bold"
   },
-  boldPoints: {
-  fontSize: 14,
-  },
+  pointsBold: {
+    fontWeight : "bold"
+  }
 });
