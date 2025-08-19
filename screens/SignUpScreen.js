@@ -10,196 +10,180 @@ import {
 
 const API_URL = "http://192.168.1.14:3000"; // téléphone physique
 
-export default function LandingPage({ navigation }) {
+export default function SignUpScreen({ navigation }) {
   const [departments, setDepartments] = useState([]);
   const [selectedDepartment, setSelectedDepartment] = useState(null); // état pour stocker le departement sélectionné
   const [isDropdownVisible, setDropdownVisible] = useState(false); // état pour controler la visibilité du dropdown
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmePassword] = useState("");
   const [showPassword, setShowPassword] = useState(false); // pour la possibilité d'afficher ce qu'on écrit dans le password
-  
+
   // fonction pour recuperer tous les departements actifs
+
   const loadDepts = () => {
-    fetch("http://10.78.0.148:3000/depts")
-      .then(response => response.json())
-      .then(data => {
+    fetch("http://172.20.10.2:3000/depts")
+      .then((response) => response.json())
+      .then((data) => {
         if (data.result) {
           // on stock tout l'objet car on envoie au backend l'id par la suite, donc il nous faut tout
-          setDepartments(data.departments)
+          setDepartments(data.departments);
         }
-      })
-  }
-     // on appelle la fonction loadDepts au mount du composant 
-    useEffect(() => {
-      loadDepts();
-    }, []);
+      });
+  };
+  // on appelle la fonction loadDepts au mount du composant
+  useEffect(() => {
+    loadDepts();
+  }, []);
 
-    // fonction qu'on appelle lorsqu’un département est sélectionné
-    const handleSelect = (dept) => {
-      setSelectedDepartment(dept); // mise à jour du département sélectionné dans l'état
-      setDropdownVisible(false); // on ferme la dropdown
-    };
+  // fonction qu'on appelle lorsqu’un département est sélectionné
+  const handleSelect = (dept) => {
+    setSelectedDepartment(dept); // mise à jour du département sélectionné dans l'état
+    setDropdownVisible(false); // on ferme la dropdown
+  };
 
-    async function submitSignUpForm() {
-      if (!email || !username || !password || !selectedDepartment) {
-        alert("Please fill all fields!");
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        alert("Passwords do not match");
-        return;
-      }
-
-      fetch("http://10.78.0.148:3000/users/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          username,
-          password,
-          departmentId: selectedDepartment._id, 
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.result) {
-            alert("Account created successfully!");
-            //console.log("User token:", data.token);
-            // Ici, on pourrait rediriger vers une autre page
-          } else {
-            alert(data.error);
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          alert("Something went wrong");
-        });
+  async function submitSignUpForm() {
+    if (!email || !username || !password || !selectedDepartment) {
+      alert("Please fill all fields!");
+      return;
     }
 
-    return (
-      <View style={styles.container}>
-        {/* Bienvenue text*/}
-        <View style={styles.welcomeText}>
-          <Text style={styles.welcomeWord}>Welcome !</Text>
-          <Text>Create an Account </Text>
-        </View>
-
-        {/* Email */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputFormLabel}>Email address</Text>
-          <TextInput
-            style={styles.formInput}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Email address"
-            placeholderTextColor="#999"
-            autoCapitalize="none"
-          />
-        </View>
-        {/* Username */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputFormLabel}>Username</Text>
-          <TextInput
-            style={styles.formInput}
-            value={username}
-            onChangeText={setUsername}
-            placeholder="Username"
-            placeholderTextColor="#999"
-            autoCapitalize="none"
-          />
-        </View>
-        {/* Password */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputFormLabel}>Password</Text>
-          <TextInput
-            style={styles.formInput}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Password"
-            placeholderTextColor="#999"
-            secureTextEntry={!showPassword}
-            // autoComplete="off" // désactive suggestion iOS
-            textContentType="none" // désactive gestionnaire de mots de passe
-            autoCapitalize="none"
-          />
-        </View>
-        {/* Re enter the password */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputFormLabel}>Re-enter the password</Text>
-          <TextInput
-            style={styles.formInput}
-            value={confirmPassword}
-            onChangeText={setConfirmePassword}
-            placeholder="Re-enter the password"
-            placeholderTextColor="#999"
-            secureTextEntry={!showPassword}
-            autoComplete="off" // désactive suggestion iOS
-            textContentType="none" // désactive gestionnaire de mots de passe
-            autoCapitalize="none"
-          />
-        </View>
-        <View style={styles.showPassword}>
-          <TouchableOpacity
-            style={[styles.circle, showPassword && styles.checkedCircle]}
-            onPress={() => setShowPassword(!showPassword)}
-          ></TouchableOpacity>
-          <Text style={styles.footerText}>Show passwords</Text>
-        </View>
-        {/* Department Dropdown */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputFormLabel}>Department</Text>
-
-          {/* bouton qui va déclencher l'ouverture de la dropdown */}
-          <TouchableOpacity
-            style={styles.formInput}
-            onPress={() => setDropdownVisible(!isDropdownVisible)}
-          >
-            <Text style={styles.inputFormLabel}>
-              {/* cela affiche la valeur sélectionnée ou un texte par défaut */}
-              {selectedDepartment?.name || "Select..."}
-            </Text>
-          </TouchableOpacity>
-          {/*  si on a cliqué sur la dropdown alors */}
-          {isDropdownVisible && (
-            <View style={styles.dropdownBox}>
-              <ScrollView style={{ maxHeight: 150 }}>
-                {/* on parcourt la liste des departements */}
-                {departments.map((dept, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.option}
-                    onPress={() => handleSelect(dept)}
-                  >
-                    <Text>{dept.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-        </View>
-
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.submitButton}
-            activeOpacity={0.7} // un effet sur le bouton au clic (70% visible, 30% transparent)
-            onPress={() => submitSignUpForm()}
-          >
-            <Text style={styles.buttonText}>Submit</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.goBackContainer}>
-          <Text style={styles.goBackText}>Already have an account ?</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("TabNavigator")}>
-            <Text style={styles.backToSignIn}>Sign in to your account</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
+    fetch("http://172.20.10.2:3000/users/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        username,
+        password,
+        departmentId: selectedDepartment._id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.result) {
+          alert("Account created successfully!");
+          //console.log("User token:", data.token);
+          // Ici, on pourrait rediriger vers une autre page
+        } else {
+          alert(data.error);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Something went wrong");
+      });
   }
 
+  return (
+    <View style={styles.container}>
+      {/* Welcome text */}
+      <View style={styles.welcomeHeader}>
+        <Text style={styles.welcomeTitle}>Welcome !</Text>
+        <Text style={styles.welcomeSubtitle}>Create an account </Text>
+      </View>
+      {/* Email */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputFormLabel}>Email address</Text>
+        <TextInput
+          style={styles.formInput}
+          value={email}
+          onChangeText={setEmail}
+          placeholder="your@email.com"
+          placeholderTextColor="#999"
+          autoCapitalize="none"
+        />
+      </View>
+      {/* Username */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputFormLabel}>Username</Text>
+        <TextInput
+          style={styles.formInput}
+          value={username}
+          onChangeText={setUsername}
+          placeholder="Username"
+          placeholderTextColor="#999"
+          autoCapitalize="none"
+        />
+      </View>
+      {/* Password */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputFormLabel}>Password</Text>
+        <TextInput
+          style={styles.formInput}
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Password"
+          placeholderTextColor="#999"
+          secureTextEntry={!showPassword}
+          // autoComplete="off" // désactive suggestion iOS
+          textContentType="none" // désactive gestionnaire de mots de passe
+          autoCapitalize="none"
+        />
+      </View>
+
+      {/* Show Password  */}
+      <View style={styles.showPassword}>
+        <TouchableOpacity
+          style={[styles.circle, showPassword && styles.checkedCircle]}
+          onPress={() => setShowPassword(!showPassword)}
+        >
+          {showPassword && <View style={styles.innerCircle} />}
+        </TouchableOpacity>
+        <Text style={styles.footerText}>Show password</Text>
+      </View>
+      {/* Department Dropdown */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputFormLabel}>Department</Text>
+        {/* bouton qui va déclencher l'ouverture de la dropdown */}
+        <TouchableOpacity
+          style={styles.formInput}
+          onPress={() => setDropdownVisible(!isDropdownVisible)}
+        >
+          <Text
+            style={!selectedDepartment ? { color: "#999" } : {}} // style si aucun dept sélectionné
+          >
+            {/* cela affiche la valeur sélectionnée ou un texte par défaut */}
+            {selectedDepartment?.name || "Select..."}
+          </Text>
+        </TouchableOpacity>
+        {/*  si on a cliqué sur la dropdown */}
+        {isDropdownVisible && (
+          <View style={styles.dropdownBox}>
+            <ScrollView style={{ maxHeight: 150 }}>
+              {/* on parcourt la liste des departements */}
+              {departments.map((dept, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.option}
+                  onPress={() => handleSelect(dept)}
+                >
+                  <Text>{dept.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+      </View>
+      {/* Submit bouton */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.submitButton}
+          activeOpacity={0.7} // un effet sur le bouton au clic (70% visible, 30% transparent)
+          onPress={() => submitSignUpForm()}
+        >
+          <Text style={styles.buttonText}>Submit</Text>
+        </TouchableOpacity>
+      </View>
+      {/* Links */}
+      <View style={styles.goBackContainer}>
+        <Text style={styles.goBackText}>Already have an account?</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("TabNavigator")}>
+          <Text style={styles.backToSignIn}>Sign in to your account</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -207,21 +191,29 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
     justifyContent: "center", // centrer horizontalement
-    
   },
-  welcomeText: {
+  welcomeHeader: {
     alignItems: "center",
+    marginTop: 10,
+    marginBottom: 20,
   },
-  welcomeWord: {
-    fontSize: 15,
+  welcomeTitle: {
+    fontSize: 32,
+    fontWeight: 700,
+    color: "#0F172A",
+    marginBottom: 8,
+    letterSpacing: -0.5,
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    fontWeight: 400,
     color: "#0F172A",
   },
   inputContainer: {
     marginBottom: 10,
-    
   },
   inputFormLabel: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "600",
     color: "#0F172A",
     marginBottom: 8,
@@ -230,7 +222,6 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
   },
-
   dropdownBox: {
     borderWidth: 1,
     borderColor: "#DBDBDB",
@@ -256,19 +247,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     width: "40%",
-    marginTop: 5,
+    marginTop: 10,
     marginBottom: 5,
     marginLeft: 5,
-    alignItems: "center"
+    alignItems: "center",
   },
   circle: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: "#cccccc",
+    borderColor: "#ccc",
     alignItems: "center",
     justifyContent: "center",
+  },
+  innerCircle: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#0F4B34",
+    alignSelf: "center",
   },
   checkedCircle: {
     borderRadius: 10,
@@ -276,22 +274,18 @@ const styles = StyleSheet.create({
     borderColor: "#0F4B34",
   },
   submitButton: {
+    marginTop: 20,
     backgroundColor: "#0F4B34",
-    paddingVertical: 8, // hauteur du bouton
-    paddingHorizontal: 7, // largeur du bouton
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     borderRadius: 8,
-  },
-  button: {
-    backgroundColor: "#0F4B34",
-    paddingVertical: 16, // hauteur de l'input
-    paddingHorizontal: 12, // largeur de l'input
-    borderRadius: 8,
-    marginVertical: 10, // que les inputs soient séparés
-    width: "80%",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
   },
   buttonText: {
-    color: "white",
-    fontSize: 15,
+    color: "#fff",
+    fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
   },
@@ -299,14 +293,16 @@ const styles = StyleSheet.create({
     color: "#0F4B34",
     marginTop: 10,
     textDecorationLine: "underline",
+    textAlign: "center",
   },
-
   goBackContainer: {
-    marginTop: 50,
+    marginTop: 40,
     alignItems: "center",
-    justifyContent: "center",
   },
   goBackText: {
     textAlign: "center",
+  },
+  footerText: {
+    color: "#555",
   },
 });

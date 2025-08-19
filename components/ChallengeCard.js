@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     shadowColor: "#0F4B34",
     shadowOpacity: 0.05,
+    shadowRadius: 5,
     alignItems: "flex-start",
     borderWidth: 1,
     borderColor: "#f2f2f2ff",

@@ -9,21 +9,21 @@ import {
 
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../reducers/user";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SignInScreen({ navigation }) {
   const dispatch = useDispatch();
   const [credentials, setCredentials] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // pour la possibilité d'afficher ce qu'on écrit dans le password
+  const [showPassword, setShowPassword] = useState(false);
 
-  // sign in function qui sera trigger par onPress
   async function submitSignInForm() {
     if (!credentials || !password) {
-      alert("All the fields are mandatory");
+      alert("All fields are mandatory");
       return;
     }
-    // a mettre dans .env ?
-    fetch("http://172.20.9.163:3000/users/signin", {
+
+    fetch("http://192.168.1.125:3000/users/signin", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -31,56 +31,81 @@ export default function SignInScreen({ navigation }) {
         password,
       }),
     }).then(async (response) => {
-      // si jamais le backend tombe on peut recuperer l'erreur
       const data = await response.json();
       if (!response.ok) {
         alert(data.message);
         return;
       }
-      // on envoie les données dans redux
+
       dispatch(loginSuccess(data.user));
+      await AsyncStorage.setItem("token", data.token);
       navigation.navigate("TabNavigator");
     });
   }
-  
+
   return (
     <View style={styles.container}>
-      <Text style={styles.welcome}>Welcome back!</Text>
-      <Text style={styles.title}>Sign In</Text>
-      <Text style={styles.label}>Username or Email address</Text>
-      <TextInput
-        style={styles.input}
-        value={credentials}
-        onChangeText={setCredentials} // mise à jour du state avec les infos mises dans le champs
-        autoCapitalize="none" // sinon ça commence toujours pas une majuscule
-      />
-      <Text style={styles.label}>Password</Text>
-      <TextInput
-        style={styles.input}
-        secureTextEntry={!showPassword}
-        value={password}
-        onChangeText={setPassword}
-        autoCapitalize="none"
-      />
+      {/* Welcome text */}
+      <View style={styles.welcomeHeader}>
+        <Text style={styles.welcomeTitle}>Welcome back!</Text>
+        <Text style={styles.welcomeSubtitle}>Sign in to your account</Text>
+      </View>
+      {/* Username / Email */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputFormLabel}>Username or Email</Text>
+        <TextInput
+          style={styles.formInput}
+          value={credentials}
+          onChangeText={setCredentials}
+          placeholder="your@email.com"
+          placeholderTextColor="#999"
+          autoCapitalize="none"
+        />
+      </View>
+      {/* Password */}
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputFormLabel}>Password</Text>
+        <TextInput
+          style={styles.formInput}
+          secureTextEntry={!showPassword}
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Password"
+          placeholderTextColor="#999"
+          autoCapitalize="none"
+        />
+      </View>
+      {/* Show Password */}
       <View style={styles.showPassword}>
         <TouchableOpacity
           style={[styles.circle, showPassword && styles.checkedCircle]}
           onPress={() => setShowPassword(!showPassword)}
-        ></TouchableOpacity>
+        >
+          {showPassword && <View style={styles.innerCircle} />}
+        </TouchableOpacity>
         <Text style={styles.footerText}>Show password</Text>
       </View>
-      <TouchableOpacity style={styles.button} onPress={submitSignInForm}>
-        <Text style={styles.buttonText}>Submit</Text>
-      </TouchableOpacity>
-      <TouchableOpacity>
-        <Text style={styles.link}>Forgot your Password ?</Text>
-      </TouchableOpacity>
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Don't have an account yet ?</Text>
+      {/* Submit bouton */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.submitButton}
+          activeOpacity={0.7}
+          onPress={submitSignInForm}
+        >
+          <Text style={styles.buttonText}>Submit</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
-        <Text style={styles.link}>Sign Up</Text>
+      {/* Links */}
+      <TouchableOpacity>
+        <Text style={styles.backToSignIn}>Forgot your password?</Text>
       </TouchableOpacity>
+
+      <View style={styles.goBackContainer}>
+        <Text style={styles.goBackText}>Don’t have an account yet?</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
+          <Text style={styles.backToSignIn}>Create an account</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -89,77 +114,109 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    justifyContent: "center",
     backgroundColor: "#fff",
+    justifyContent: "center",
   },
-  welcome: {
+  welcomeHeader: {
+    alignItems: "center",
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  welcomeTitle: {
+    fontSize: 32,
+    fontWeight: 700,
+    color: "#0F172A",
+    marginBottom: 8,
+    letterSpacing: -0.5,
+  },
+  welcomeSubtitle: {
     fontSize: 16,
-    textAlign: "center",
-    marginBottom: 5,
+    fontWeight: 400,
+    color: "#0F172A",
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 25,
+  inputContainer: {
+    marginBottom: 10,
   },
-  label: {
+  inputFormLabel: {
     fontSize: 14,
     fontWeight: "600",
-    marginTop: 10,
+    color: "#0F172A",
+    marginBottom: 8,
   },
-  input: {
+  formInput: {
     borderWidth: 1,
     borderColor: "#DBDBDB",
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    marginTop: 5,
+    borderRadius: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    backgroundColor: "#f9f9f9",
   },
-  button: {
-    backgroundColor: "#0F4B34", // couleur utilisée
-    padding: 12,
-    borderRadius: 6,
+  buttonContainer: {
+    width: "100%",
+    alignItems: "center",
+  },
+  submitButton: {
     marginTop: 20,
+    backgroundColor: "#0F4B34",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "bold",
     textAlign: "center",
-  },
-  link: {
-    color: "#0F4B34",
-    textAlign: "center",
-    marginTop: 10,
-  },
-  footer: {
-    marginTop: 100,
-    color: "#555",
-  },
-  footerText: {
-    textAlign: "center",
-    color: "#555",
   },
   showPassword: {
     flexDirection: "row",
     justifyContent: "space-between",
     width: "40%",
-    marginTop: 10,
+    marginTop: 5,
+    marginBottom: 5,
     marginLeft: 5,
-    alignItems: "center"
+    alignItems: "center",
   },
   circle: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: "#DBDBDB",
+    borderColor: "#cccccc",
     alignItems: "center",
     justifyContent: "center",
+  },
+  innerCircle: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#0F4B34",
+    alignSelf: "center",
   },
   checkedCircle: {
     borderRadius: 10,
     borderWidth: 2,
     borderColor: "#0F4B34",
+  },
+  backToSignIn: {
+    color: "#0F4B34",
+    marginTop: 10,
+    textDecorationLine: "underline",
+    textAlign: "center",
+  },
+  goBackContainer: {
+    marginTop: 50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  goBackText: {
+    textAlign: "center",
+  },
+  footerText: {
+    color: "#555",
   },
 });

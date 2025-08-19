@@ -51,8 +51,8 @@ function TabNavigator() {
           if (route.name === "Rankings") iconName = "trophy";
           return <FontAwesome name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: "#2196f3",
-        tabBarInactiveTintColor: "gray",
+        tabBarActiveTintColor: "#0F4B34",
+        tabBarInactiveTintColor: "#729889",
         headerShown: false,
       })}
     >

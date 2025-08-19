@@ -11,7 +11,7 @@ export default function HomeScreen({ navigation }) {
     /*le composant parent va toujours gerer la visibilité de la modale*/
   }
   const [showValidateModal, setShowValidateModal] = useState(true);
-  const pointsCount = 3434 + " pts"; // temporaire
+  const pointsCount = 3434 // temporaire
   const co2Count = 2.5 + " kg"; // temporaire
 
   // Exemple de données (à dynamiser avec l’API plus tard)

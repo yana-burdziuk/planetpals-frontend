@@ -10,7 +10,7 @@ export default function Header({ title = "PlanetPals", count = 0 }) {
         <Text style={styles.title}>{title}</Text>
       </View>
       {/* bloc droite : compteur de points totaux */}
-      <Text style={styles.count}>{count}</Text>
+      <Text style={styles.count}>{count} pts</Text>
     </View>
   );
 }

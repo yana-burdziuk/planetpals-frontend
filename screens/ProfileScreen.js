@@ -1,41 +1,60 @@
 import React from "react";
-import { Button, StyleSheet, Text, View } from "react-native";
+import { TouchableOpacity, StyleSheet, Text, View } from "react-native";
 import Header from "../components/Header";
 import Badge from "../components/Badge";
 import { useSelector } from "react-redux";
 
-export default function ProfileScreen({}) {
-  //pour l'instant on a juste un tableau des badges, à voir pour créer peut être une API
-  const badges = [
-    { name: "🌱", text: "Little Seed", points: 400, disabled: false },
-    { name: "🥕", text: "Baby Carrot", points: 1800, disabled: false },
-    { name: "🥦", text: "Mighty Broccoli", points: 3000, disabled: true },
-    { name: "🌶️", text: "Brilliant Pepper", points: 4500, disabled: true },
-    { name: "🌽", text: "Golden Corn", points: 7000, disabled: true },
-    { name: "🎃", text: "Legendary Pumpkin", points: 9000, disabled: true },
-  ];
+export default function ProfileScreen({ }) {
+  
+  // recup depuis le redux 
 
-// pour compter le nombre de badges
- const currentBadgeCount = badges.filter(badge => !badge.disabled).length; // crée le nouveau tableau avec des badges activés (condition respéctée)
-  const totalBadgeCount = badges.length; // le nombre total des badges dans le tableau
-
-  const currentPoints = 2200; // à dynamiser
-  const totalPoints = 3000; // à dynamiser
-  const progress = currentPoints / totalPoints;
-  const pointsCount = 3434 + " pts"; // temporaire
   const username = useSelector((state) => state.user.username);
+  const currentPoints = useSelector((state) => state.user.currentPoints);
+
+  //pour l'instant on a juste un tableau des badges, à voir pour créer peut être une API et transmettre la logique au backend
+  const existingBadges = [
+    { name: "🌱", text: "Little Seed", points: 400, disabled: true },
+    { name: "🥕", text: "Baby Carrot", points: 800, disabled: true },
+    { name: "🥦", text: "Mighty Broccoli", points: 1200, disabled: true },
+    { name: "🌶️", text: "Brilliant Pepper", points: 1600, disabled: true },
+    { name: "🌽", text: "Golden Corn", points: 2000, disabled: true },
+    { name: "🎃", text: "Legendary Pumpkin", points: 2400, disabled: true },
+  ];
+  // on détermine le prochain palier
+  
+   // on cherche le premier badge dont les points sont superieurs aux points currents de l'utilisateur
+  // (les badges sont triés par points croissants)
+  const nextBadge = existingBadges.find((b) => b.points > currentPoints);
+
+  //si on a trouvé un nextBadge, alors la jauge de progression doit viser son seuil
+  //sinon si tous les badges sont déjà débloqués, on met totalPoints = currentPoints pour que la barre affiche 100%
+
+  const totalPoints = nextBadge ? nextBadge.points : currentPoints;
+
+  // on fait un nouveau tableau avec disabled changé dynamiquement (true si pas assez de points), on ne modifie pas l'existant !
+  const usersBadges = existingBadges.map((badge) => ({
+    ...badge,
+    disabled: currentPoints < badge.points,
+  }));
+
+  // pour compter le nombre de badges
+  const currentBadgeCount = usersBadges.filter((badge) => !badge.disabled).length; // crée le nouveau tableau avec des badges activés (condition respéctée)
+  const totalBadgeCount = existingBadges.length; // le nombre total des badges dans le tableau
+
+  // progression : tant qu'il y a ou progresser, on fait score courant / seuil du prochain badge, sinon on met 1 = 100%
+  const progress = nextBadge ? currentPoints / totalPoints : 1 ;
+
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.pageHeader}>
-        <Header title="PlanetPals" count={pointsCount} />
+        <Header title="PlanetPals" count={currentPoints}/>
       </View>
 
-      {/* Profile Name à recuperer depuis le redux dynamiquement */}
+      {/* profile name */}
       <View style={styles.profileNameContainer}>
-        <Text style={styles.profileNameText}>angrybird</Text>
-        {/*    <Text>{username} </Text> */}
+        <Text style={styles.profileNameText}>{username}</Text>
       </View>
 
       {/* barre de progression*/}
@@ -52,9 +71,11 @@ export default function ProfileScreen({}) {
 
       <View style={styles.badgeContainer}>
         <View style={styles.myBadgesTextContainer}>
-          <Text style={styles.myBadgesText}>My badges ({currentBadgeCount}/{totalBadgeCount})</Text>
+          <Text style={styles.myBadgesText}>
+            My badges ({currentBadgeCount}/{totalBadgeCount})
+          </Text>
         </View>
-        {badges.map((badge, index) => (
+        {usersBadges.map((badge, index) => (
           <Badge
             key={index}
             name={badge.name}
@@ -63,6 +84,13 @@ export default function ProfileScreen({}) {
             disabled={badge.disabled}
           />
         ))}
+      </View>
+      {/* LogOut*/}
+      <View>
+        <TouchableOpacity style={styles.logOut}>
+          <Text style={styles.logOutText}>Log Out</Text>
+        </TouchableOpacity>
+        
       </View>
     </View>
   );
@@ -143,4 +171,15 @@ const styles = StyleSheet.create({
     flexWrap: "wrap", // passer à la ligne, donc prend le max ce qui peut rentrer dans les 90%
     justifyContent: "space-between",
   },
+  logOut: {
+    backgroundColor: "#0F4B34",
+    padding: 5,
+    borderRadius: 6,
+    marginTop: 20,
+  },
+  logOutText: {
+        color: "#fff",
+    fontWeight: "400",
+    textAlign: "center",
+  }
 });

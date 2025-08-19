@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 
 import Header from "../components/Header"; // Header réutilisable avec titre et points utilisateur
 
@@ -18,7 +13,7 @@ const rankings = [
 ];
 
 export default function RankingScreen() {
-  const userPoints = "3434 pts"; // À remplacer par données dynamiques (ex: Redux)
+  const userPoints = "3434"; // À remplacer par données dynamiques (ex: Redux)
 
   return (
     <View style={styles.container}>
@@ -37,9 +32,7 @@ export default function RankingScreen() {
           <View key={index} style={styles.rankCard}>
             <Text style={styles.rankNumber}>{index + 1}</Text>
             <Text style={styles.department}>{item.department}</Text>
-            <Text style={styles.points}>
-              <Text style={styles.boldPoints}>{item.points}</Text> points
-            </Text>
+            <Text style={styles.points}>{item.points} points</Text>
           </View>
         ))}
       </ScrollView>
@@ -49,49 +42,52 @@ export default function RankingScreen() {
 
 const styles = StyleSheet.create({
   container: {
-  flex: 1,
-  paddingTop: 50,
-  backgroundColor: "#F2F2F2",
-},
+    flex: 1,
+    paddingTop: 50,
+    backgroundColor: "#F2F2F2",
+  },
   scrollContent: {
-  alignItems: "center",
-  paddingBottom: 40,
-},
+    alignItems: "center",
+    paddingBottom: 40,
+  },
   title: {
-  fontSize: 20,
-  fontWeight: "bold",
-  marginVertical: 20,
-  color: "#0F172A",
-},
+    fontSize: 24,
+    fontWeight: "bold",
+    marginVertical: 20,
+    color: "#0F172A",
+  },
   rankCard: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#fff",
-  width: "85%",
-  padding: 15,
-  marginBottom: 10,
-  borderRadius: 10,
-  borderColor: "#ddd",
-  borderWidth: 1,
-  shadowColor: "#000",
-  shadowOpacity: 0.05,
-  shadowRadius: 5,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    width: "90%",
+    padding: 20,
+    marginBottom: 10,
+    borderRadius: 15,
+
+  },
   rankNumber: {
-  fontSize: 20,
-  fontWeight: "bold",
-  marginRight: 15,
-  color: "#0F4B34",
-},
+    fontSize: 20,
+    fontWeight: "bold",
+    marginRight: 15,
+    color: "#0F4B34",
+  },
   department: {
-  flex: 1,
-  fontSize: 16,
-},
+    flex: 1,
+    fontSize: 16,
+    color: "#0F172A",
+  },
   points: {
-  fontSize: 14,
-  color: "#555",
-},
+    fontSize: 14,
+    color: "#0F4B34",
+    backgroundColor: "#CFF7D3", // ui kit figma pour les couleurs
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    marginRight: 12,
+    fontWeight: "bold"
+  },
   boldPoints: {
-  fontWeight: "bold",
-},
+  fontSize: 14,
+  },
 });

@@ -18,7 +18,7 @@ export default function MyTeam() {
   return (
     <View style={styles.container}>
       {/* Composant d'en-tête réutilisable avec le titre de la page et les points de l'utilisateur */}
-      <Header title="PlanetPals" count={`${userPoints} pts`} />
+      <Header title="PlanetPals" count={userPoints} />
 
       <View style={styles.content}>
         <Text style={styles.pageTitle}>My Team</Text>
@@ -74,10 +74,8 @@ const styles = StyleSheet.create({
     color: "#0F172A",
   },
   departmentBox: {
-    borderWidth: 1,
-    borderColor: "#ccc",
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 15,
     marginBottom: 20,
     backgroundColor: "#fff",
   },
@@ -96,9 +94,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 15,
     marginHorizontal: 5,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
+    borderRadius: 15,
     alignItems: "center",
   },
   statTitle: {
@@ -119,8 +115,6 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 10,
     borderRadius: 10,
-    borderColor: "#ccc",
-    borderWidth: 1,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -130,7 +124,12 @@ const styles = StyleSheet.create({
     color: "#0F172A",
   },
   memberPoints: {
-    fontSize: 16,
-    color: "#0F172A",
+    fontSize: 14,
+    color: "#0F4B34",
+    backgroundColor: "#CFF7D3", // ui kit figma pour les couleurs
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    marginRight: 12,
   },
 });
