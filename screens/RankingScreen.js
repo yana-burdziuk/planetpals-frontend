@@ -1,7 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
-
 import Header from "../components/Header"; // Header réutilisable avec titre et points utilisateur
+import { useSelector } from "react-redux";
+
 
 // FAKE DATA – à remplacer par un appel API plus tard
 const rankings = [
@@ -13,12 +14,12 @@ const rankings = [
 ];
 
 export default function RankingScreen() {
-  const userPoints = 3434; // À remplacer par données dynamiques (ex: Redux)
+  const user = useSelector((state) => state.user);
 
   return (
     <View style={styles.container}>
       {/* En-tête de l'application */}
-      <Header title="PlanetPals" count={userPoints} />
+      <Header title="PlanetPals" count={user.currentPoints} />
 
       {/* Liste scrollable des départements classés */}
       <ScrollView

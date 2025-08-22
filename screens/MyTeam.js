@@ -8,7 +8,7 @@ export default function MyTeam(navigation) {
   const [teamMembers, setTeamMembers] = useState([]);
   const [departmentStats, setDepartmentStats] = useState({
     deptName : "",
-    totalPoints: 0,
+    totalPoints: 0, 
     totalCO2: 0,
   });
 
@@ -69,7 +69,7 @@ export default function MyTeam(navigation) {
             <View key={index} style={styles.memberCard}>
               <Text style={styles.memberName}>{member.username}</Text>
               <Text style={styles.memberPoints}>
-                {member.totalPoints}
+                {member.totalPoints} {""}
                 <Text style={styles.pointsBold}>points</Text>
               </Text>
             </View>
