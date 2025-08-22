@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from "react-native";
 import Header from "../components/Header";
 import { useSelector } from "react-redux";
 
-export default function MyTeam(navigation) {
+export default function MyTeam() {
   const user = useSelector((state) => state.user);
   const [teamMembers, setTeamMembers] = useState([]);
   const [departmentStats, setDepartmentStats] = useState({
@@ -13,7 +13,6 @@ export default function MyTeam(navigation) {
   });
 
   const { deptName, totalPoints, totalCO2 } = departmentStats;
-
 
   useEffect(() => {
     const fetchTeam = async () => {
@@ -28,11 +27,10 @@ export default function MyTeam(navigation) {
           setDepartmentStats(data.departmentStats);
         
         }
-      } catch (err) {
-        console.error("Error fetching team:", err);
+      } catch (error) {
+        console.error("Error fetching team:", error);
       }
     };
-
     fetchTeam();
   }, [user.token]);
 

@@ -1,18 +1,19 @@
-import React from "react";
+import React, {useState} from "react";
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from "react-native";
 import Header from "../components/Header";
 import ChallengeCard from "../components/ChallengeCard";
 import ValidateModal from "../components/ValidateModal";
-import { useState } from "react";
+import { useSelector } from "react-redux";
 
 
-export default function HomeScreen({ navigation }) {
-  {
-    /*le composant parent va toujours gerer la visibilité de la modale*/
-  }
+export default function HomeScreen({navigation}) {
+  const user = useSelector((state) => state.user);
+
+  // le composant parent va toujours gerer la visibilité de la modale
+  
   const [showValidateModal, setShowValidateModal] = useState(true);
-  const pointsCount = 3434 // temporaire
   const co2Count = 2.5 + " kg"; // temporaire
+  
 
   // Exemple de données (à dynamiser avec l’API plus tard)
   const dailyChallenges = [
@@ -40,7 +41,7 @@ export default function HomeScreen({ navigation }) {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.pageHeader}>
-        <Header title="PlanetPals" count={pointsCount} />
+        <Header title="PlanetPals" count={user.currentPoints} />
       </View>
 
       {/* ScrollView pour pouvoir défiler */}

@@ -10,8 +10,11 @@ import {
   SafeAreaView,
 } from "react-native";
 import Header from "../components/Header"; // ton header maison
+import { useSelector } from "react-redux";
 
 export default function ChallengeScreen({ route }) {
+  const user = useSelector((state) => state.user);
+
   // Récupération des infos passées depuis Home
   const { challengeId, title = "Use a reusable water bottle" } =
     route.params || {};
@@ -58,11 +61,11 @@ export default function ChallengeScreen({ route }) {
     console.log("complete challenge", challengeId);
   };
 
-  const userPoints = "3434 pts"; // mock pour le Header
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Header title="Details" count={userPoints} />
+      <Header title="Details" count={user.currentPoints} />
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: 28 }}

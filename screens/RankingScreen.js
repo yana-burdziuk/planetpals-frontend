@@ -1,20 +1,33 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import Header from "../components/Header"; // Header réutilisable avec titre et points utilisateur
 import { useSelector } from "react-redux";
 
-
-// FAKE DATA – à remplacer par un appel API plus tard
-const rankings = [
-  { department: "HR", points: 15000 },
-  { department: "IT", points: 12000 },
-  { department: "Marketing", points: 10000 },
-  { department: "Finance", points: 8500 },
-  { department: "Logistics", points: 6000 },
-];
+const API_URL = "http://192.168.1.27:3000"; // téléphone physique
 
 export default function RankingScreen() {
   const user = useSelector((state) => state.user);
+  const [departments, setDepartments] = useState([]);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const res = await fetch(`${API_URL}/depts`);
+        const data = await res.json();
+
+        if (data.result) {
+          const sortedDepts = data.departments.sort(
+          // pour que ça s'affiche dans le bon ordre 
+            (a,b) => b.totalPoints - a.totalPoints
+          )
+          setDepartments(sortedDepts);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -29,12 +42,12 @@ export default function RankingScreen() {
         <Text style={styles.title}>Department ranking</Text>
 
         {/* Affichage de chaque département avec sa position, son nom et ses points */}
-        {rankings.map((item, index) => (
-          <View key={index} style={styles.rankCard}>
+        {departments.map((dept, index) => (
+          <View key={dept._id} style={styles.rankCard}>
             <Text style={styles.rankNumber}>{index + 1}</Text>
-            <Text style={styles.department}>{item.department}</Text>
+            <Text style={styles.department}>{dept.name}</Text>
             <Text style={styles.points}>
-              {item.points} <Text style={styles.pointsBold}>points</Text>
+              {dept.totalPoints} <Text style={styles.pointsBold}>points</Text>
             </Text>
           </View>
         ))}
@@ -89,6 +102,6 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   pointsBold: {
-    fontWeight : "bold"
-  }
+    fontWeight: "bold",
+  },
 });
