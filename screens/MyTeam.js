@@ -1,39 +1,61 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import Header from "../components/Header";
+import { useSelector } from "react-redux";
 
-export default function MyTeam() {
-  // TODO : remplacer ces données par celles du backend / Redux
-  const userPoints = 3434;
-  const departmentName = "HR Department";
-  const totalPoints = 8500;
-  const totalCO2 = 20;
+export default function MyTeam(navigation) {
+  const user = useSelector((state) => state.user);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [departmentStats, setDepartmentStats] = useState({
+    deptName : "",
+    totalPoints: 0,
+    totalCO2: 0,
+  });
 
-  // TODO : recuperer les users du departement
-  const teamMembers = [
-    { name: "Yana", points: 3434 },
-    { name: "Gilles", points: 2533 },
-    { name: "Lionel", points: 2533 },
-  ];
+  const { deptName, totalPoints, totalCO2 } = departmentStats;
+
+
+  useEffect(() => {
+    const fetchTeam = async () => {
+      try {
+        const res = await fetch("http://192.168.1.27:3000/users/team", {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+        const data = await res.json();
+
+        if (data.result) {
+          setTeamMembers(data.teamMembers);
+          setDepartmentStats(data.departmentStats);
+        
+        }
+      } catch (err) {
+        console.error("Error fetching team:", err);
+      }
+    };
+
+    fetchTeam();
+  }, [user.token]);
 
   return (
     <View style={styles.container}>
-      {/* Composant d'en-tête réutilisable avec le titre de la page et les points de l'utilisateur */}
-      <Header title="PlanetPals" count={userPoints} />
+      {/* Header avec les points du user */}
+      <Header title="PlanetPals" count={user.currentPoints} />
 
       <View style={styles.content}>
         <Text style={styles.pageTitle}>My Team</Text>
 
-        {/* Affichage du nom du département */}
+        {/* Nom du département */}
         <View style={styles.departmentBox}>
-          <Text style={styles.departmentText}>{departmentName}</Text>
+          <Text style={styles.departmentText}>{deptName}</Text>
         </View>
 
-        {/* Statistiques générales de l'équipe : points + CO2 */}
+        {/* Stats département */}
         <View style={styles.statRow}>
           <View style={styles.statBox}>
             <Text style={styles.statTitle}>Total points</Text>
-            <Text style={styles.statValue}>{totalPoints} points</Text>
+            <Text style={styles.statValue}>
+              {totalPoints} points 
+            </Text>
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statTitle}>CO₂ savings</Text>
@@ -41,14 +63,15 @@ export default function MyTeam() {
           </View>
         </View>
 
-        {/* Liste scrollable des membres de l’équipe */}
+        {/* Membres du département */}
         <ScrollView style={styles.membersContainer}>
           {teamMembers.map((member, index) => (
             <View key={index} style={styles.memberCard}>
-              <Text style={styles.memberName}>{member.name}</Text>
-  <Text style={styles.memberPoints}>
-  {member.points} <Text style={styles.pointsBold}>points</Text>
-</Text>
+              <Text style={styles.memberName}>{member.username}</Text>
+              <Text style={styles.memberPoints}>
+                {member.totalPoints}
+                <Text style={styles.pointsBold}>points</Text>
+              </Text>
             </View>
           ))}
         </ScrollView>
@@ -125,15 +148,15 @@ const styles = StyleSheet.create({
     color: "#0F172A",
   },
   memberPoints: {
-   fontSize: 14,
-  color: "#0F4B34",
-  backgroundColor: "#CFF7D3",
-  borderRadius: 8,
-  paddingVertical: 4,
-  paddingHorizontal: 10,
-  marginRight: 12,
+    fontSize: 14,
+    color: "#0F4B34",
+    backgroundColor: "#CFF7D3",
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    marginRight: 12,
   },
   pointsBold: {
     fontWeight: "bold",
-  }
+  },
 });

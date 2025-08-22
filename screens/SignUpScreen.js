@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View,
   Text,
@@ -8,10 +9,13 @@ import {
   ScrollView,
   ActivityIndicator, // aka spinner chez Expo
 } from "react-native";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../reducers/user";
 
-const API_URL = "http://192.168.1.125:3000"; // téléphone physique
+const API_URL = "http://192.168.1.27:3000"; // téléphone physique
 
 export default function SignUpScreen({ navigation }) {
+  const dispatch = useDispatch();
   const [departments, setDepartments] = useState([]);
   const [selectedDepartment, setSelectedDepartment] = useState(null); // état pour stocker le departement sélectionné
   const [isDropdownVisible, setDropdownVisible] = useState(false); // état pour controler la visibilité du dropdown
@@ -21,7 +25,6 @@ export default function SignUpScreen({ navigation }) {
   const [showPassword, setShowPassword] = useState(false); // pour la possibilité d'afficher ce qu'on écrit dans le password
   const [loading, setLoading] = useState(false); // spinner
   // fonction pour recuperer tous les departements actifs
-
   const loadDepts = () => {
     fetch(`${API_URL}/depts`)
       .then((response) => response.json())
@@ -81,19 +84,31 @@ export default function SignUpScreen({ navigation }) {
       }),
     })
       .then((response) => response.json())
-      .then((data) => {
+      .then(async (data) => {
+        // async + await pour que ça soit plus propre
         if (data.result) {
+          // sauvegarder le token de user en local
+          await AsyncStorage.setItem("userToken", data.token);
+          // update Redux store avec le user conecté
+          dispatch(
+            loginSuccess({
+              username: data.username,
+              email: data.email,
+              token: data.token,
+              currentPoints: data.currentPoints ?? 0,
+            })
+          );
           setTimeout(() => {
-            setLoading(false)
+            setLoading(false); // on arrete le spinner quand on redirige
             navigation.navigate("TabNavigator");
-          }, 5000); // on attend quelques secondes avec le spinner avant de rediriger
+          }, 5000); // on attend quelques secondes avant de rediriger
         } else {
-          setLoading(false)
+          setLoading(false);
           alert(data.error);
         }
       })
       .catch((error) => {
-        setLoading(false)
+        setLoading(false);
         console.error("Error:", error);
         alert("Something went wrong");
       });
@@ -341,9 +356,9 @@ const styles = StyleSheet.create({
   },
   spinner: {
     marginTop: 20,
-    alignItems: "center" 
+    alignItems: "center",
   },
   spinnerText: {
-    marginTop: 10
-  }
+    marginTop: 10,
+  },
 });

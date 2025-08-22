@@ -24,7 +24,7 @@ export default function ProfileScreen({navigation}) {
 
   // on cherche le premier badge dont les points sont superieurs aux points currents de l'utilisateur
   // (les badges sont triés par points croissants)
-  const nextBadge = existingBadges.find((b) => b.points > currentPoints);
+  const nextBadge = existingBadges.find((badge) => badge.points > currentPoints);
 
   //si on a trouvé un nextBadge, alors la jauge de progression doit viser son seuil
   //sinon si tous les badges sont déjà débloqués, on met totalPoints = currentPoints pour que la barre affiche 100%
@@ -59,7 +59,7 @@ export default function ProfileScreen({navigation}) {
           //reset supprime l’historique de navigation 
           // pour éviter que le user puisse revenir en arrière après le signout
           navigation.reset({
-            routes:[{name: "SignIn"}] 
+          routes:[{name: "SignIn"}] 
           })
         },
         style: "destructive",
@@ -112,8 +112,8 @@ export default function ProfileScreen({navigation}) {
         <TouchableOpacity onPress={handleSignOut}>
           <Text style={styles.logOutText}>Sign Out</Text>
         </TouchableOpacity>
+        </View>
       </View>
-    </View>
   );
 }
 

@@ -11,6 +11,8 @@ import { useDispatch } from "react-redux";
 import { loginSuccess } from "../reducers/user";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+const API_URL = "http://192.168.1.27:3000"; // téléphone physique
+
 export default function SignInScreen({ navigation }) {
   const dispatch = useDispatch();
   const [credentials, setCredentials] = useState("");
@@ -23,7 +25,7 @@ export default function SignInScreen({ navigation }) {
       return;
     }
 
-    fetch("http://192.168.1.125:3000/users/signin", {
+    fetch(`${API_URL}/users/signin`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -36,9 +38,15 @@ export default function SignInScreen({ navigation }) {
         alert(data.message);
         return;
       }
-
-      dispatch(loginSuccess(data.user));
-      await AsyncStorage.setItem("token", data.token);
+      await AsyncStorage.setItem("userToken", data.token);
+      dispatch(
+        loginSuccess({
+          username: data.username,
+          email: data.email,
+          token: data.token,
+          currentPoints: data.currentPoints ?? 0,
+        })
+      );
       navigation.navigate("TabNavigator");
     });
   }
