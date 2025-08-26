@@ -1,15 +1,25 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet,TouchableOpacity } from "react-native";
 
-export default function ChallengeCard({ title, points, CO2, done = false }) {
+export default function ChallengeCard({ title, points, CO2, done = false, onPressCircle, onPressCard }) {
+
   return (
-    <View style={styles.challengeCard}>
+       <View
+      style={[
+        styles.challengeCard,
+        done ? styles.challengeCardDone : null, // style différent si validé
+      ]}
+    >
+       <TouchableOpacity style={{ flex: 1 }} onPress={onPressCard}>
       <View style={styles.topRow}>
-        <Text style={styles.title}> {title}</Text>
-        <View style={styles.circle}>
-          {/*si le trigger est declenché alors on affiche un autre circle(check)*/}
+         {/* le reste de la card est cliquable */}
+       
+          <Text style={styles.title}>{title}</Text>
+        {/* cercle cliquable pour valider */}
+        
+     <TouchableOpacity style={styles.circle} onPress={onPressCircle}>
           {done && <View style={styles.checkedCircle} />}
-        </View>
+        </TouchableOpacity>
       </View>
       <View style={styles.bottomRow}>
         <View style={styles.pointsPrice}>
@@ -18,7 +28,8 @@ export default function ChallengeCard({ title, points, CO2, done = false }) {
         </View>
         {/* à dynamiser la quantité de CO2*/}
         <Text style={styles.CO2Text}> {CO2} kg of CO2 saved </Text>
-      </View>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -36,7 +47,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#f2f2f2ff",
     width: "90%",
-    minHeight: "10%",
+    minHeight: 100,
+  },
+  challengeCardDone: {
+    backgroundColor: "#F4FFF5",
+    borderRadius: 15,
+    padding: 20,
+    marginTop: 20,
+    shadowColor: "#0F4B34",
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    alignItems: "flex-start",
+    borderWidth: 1,
+    borderColor: "#f2f2f2ff",
+    width: "90%",
+    minHeight: 100,
   },
   topRow: {
     flexDirection: "row",

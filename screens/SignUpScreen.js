@@ -12,7 +12,7 @@ import {
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../reducers/user";
 
-const API_URL = "http://192.168.1.27:3000"; // téléphone physique
+const API_URL = "http://192.168.1.158:3000"; // téléphone physique
 
 export default function SignUpScreen({ navigation }) {
   const dispatch = useDispatch();

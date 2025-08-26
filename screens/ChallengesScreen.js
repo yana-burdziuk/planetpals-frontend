@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,44 +10,71 @@ import {
   SafeAreaView,
 } from "react-native";
 import Header from "../components/Header"; // ton header maison
+import ValidateModal from "../components/ValidateModal";
 import { useSelector } from "react-redux";
 
 export default function ChallengeScreen({ route }) {
   const user = useSelector((state) => state.user);
+  // récupération du challengeId passé depuis HomeScreen
+  const { challengeId } = route.params || {};
+  // on stocke le challenge recupéré depuis le backend, sur lequel on est
+  const [challenge, setChallenge] = useState(null);
+  // state pour stocker la liste des commentaires du challenge
+  const [comments, setComments] = useState([]);
+  const [showValidateModal, setShowValidateModal] = useState(false);
 
-  // Récupération des infos passées depuis Home
-  const { challengeId, title = "Use a reusable water bottle" } =
-    route.params || {};
+  // fetch du challenge qui correspond au challengeId
+  useEffect(() => {
+    const fetchChallenge = async () => {
+      try {
+        // on appelle la route /userChallenges pour récupérer tous les challenges du user
+        const res = await fetch(
+          "http://192.168.1.158:3000/challenges/userChallenges",
+          {
+            headers: { Authorization: `Bearer ${user.token}` },
+          }
+        );
+        const data = await res.json();
 
-  // Données mock (à remplacer plus tard par un fetch)
-  const mock = {
-    title,
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    why: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Facilisis gravida neque convallis.",
-    funFact:
-      "A fun fact about this challenge. Reusing a bottle can avoid hundreds of plastic bottles / year.",
-    activity: [
-      {
-        id: "a1",
-        author: "Marie Antoinette",
-        type: "photo",
-        thumbnail: "https://picsum.photos/seed/1/80",
-      },
-      {
-        id: "a2",
-        author: "Marie Antoinette",
-        type: "photo",
-        thumbnail: "https://picsum.photos/seed/2/80",
-      },
-    ],
-    comments: [
-      { id: "c1", author: "Marie Antoinette", text: "Lorem ipsum……" },
-      { id: "c2", author: "Louis", text: "Nice challenge!" },
-    ],
+        if (data.result) {
+          // on cherche le challenge correspondant au planningId
+          const foundChallenge = data.challenges.find(
+            (challenge) => challenge.planningId === challengeId
+          );
+          setChallenge(foundChallenge); // stockage dans state pour afficher après
+        } else {
+          console.log("Error fetching challenge:", data.error);
+        }
+      } catch (error) {
+        console.log("Error fetching challenge:", error);
+      }
+    };
+
+    fetchChallenge();
+  }, [challengeId, user.token]);
+
+  const handleSubmit = async (photoUrl = null) => {
+    try {
+      const res = await fetch(
+        `http://192.168.1.158:3000/challenges/${challenge.planningId}/submit`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ photoUrl }),
+        }
+      );
+
+      const data = await res.json();
+      if (data.result) {
+        setChallenge({ ...challenge, done: true });
+      }
+    } catch (error) {
+      console.log("Error submitting challenge:", error);
+    }
   };
-
-  const [comment, setComment] = useState("");
 
   const onSendComment = () => {
     if (!comment.trim()) return;
@@ -57,11 +84,12 @@ export default function ChallengeScreen({ route }) {
   };
 
   const onComplete = () => {
-    // TODO backend: POST /challenges/:id/complete
-    console.log("complete challenge", challengeId);
+    if (challenge?.photoRequired) {
+      setShowValidateModal(true);
+    } else {
+      handleSubmit();
+    }
   };
-
-
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -72,25 +100,24 @@ export default function ChallengeScreen({ route }) {
         showsVerticalScrollIndicator={false}
       >
         {/* Titre */}
-        <Text style={styles.title}>{mock.title}</Text>
+        <Text style={styles.title}>{challenge?.title}</Text>
 
         {/* Description */}
         <Section title="Description">
-          <Text style={styles.p}>{mock.description}</Text>
+          <Text style={styles.p}>{challenge?.description}</Text>
         </Section>
 
         {/* Why it’s important */}
         <Section title="Why it’s important">
-          <Text style={styles.p}>{mock.why}</Text>
+          <Text style={styles.p}>{challenge?.why}</Text>
         </Section>
 
         {/* Fun fact */}
-        <View style={styles.funFactBox}>
-          <Text style={styles.funFactTitle}>Fun fact</Text>
-          <Text style={styles.p}>{mock.funFact}</Text>
-        </View>
+        <Section title="Fun Fact">
+          <Text style={styles.p}>{challenge?.funFact}</Text>
+        </Section>
 
-        {/* Activity */}
+        {/* Activity  
         <Text style={styles.h2}>Activity</Text>
         {mock.activity.map((a) => (
           <View key={a.id} style={styles.activityItem}>
@@ -104,7 +131,7 @@ export default function ChallengeScreen({ route }) {
           </View>
         ))}
 
-        {/* Comments */}
+        {/* Comments  
         <Text style={[styles.h2, { marginTop: 16 }]}>Comments</Text>
         {mock.comments.map((c) => (
           <View key={c.id} style={styles.commentItem}>
@@ -116,7 +143,7 @@ export default function ChallengeScreen({ route }) {
           </View>
         ))}
 
-        {/* Add a comment */}
+        {/* Add a comment  
         <Text style={styles.h3}>Leave a comment</Text>
         <TextInput
           style={styles.input}
@@ -127,13 +154,24 @@ export default function ChallengeScreen({ route }) {
         />
         <TouchableOpacity style={styles.sendBtn} onPress={onSendComment}>
           <Text style={styles.sendText}>Send</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* Complete challenge */}
         <TouchableOpacity style={styles.primaryBtn} onPress={onComplete}>
           <Text style={styles.primaryText}>Complete the challenge</Text>
         </TouchableOpacity>
       </ScrollView>
+      {/* ValidateModal */}
+      {showValidateModal && challenge && (
+        <ValidateModal
+          challenge={challenge}
+          onClose={() => setShowValidateModal(false)}
+          onValidated={(photoUrl) => {
+            handleSubmit(photoUrl);
+            setShowValidateModal(false);
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }

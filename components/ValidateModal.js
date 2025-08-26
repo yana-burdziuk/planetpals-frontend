@@ -6,11 +6,12 @@ import * as ImagePicker from "expo-image-picker";
 import { addUserPhoto } from "../reducers/user";
 import { useDispatch } from "react-redux";
 
-export default function ValidateModal({ onClose }) {
+export default function ValidateModal({ onClose, challenge, onValidated }) {
   const [hasPermission, setHasPermission] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   //un état pour afficher l’image seulement après que l’utilisateur en ait choisi une
   const [previewImage, setPreviewImage] = useState(null);
+  const [photoUrl, setPhotoUrl] = useState(null);
   const cameraRef = useRef(null);
 
   const dispatch = useDispatch();
@@ -150,11 +151,12 @@ export default function ValidateModal({ onClose }) {
                 <TouchableOpacity
                   style={styles.submitModal}
                   onPress={() => {
-                    // faudra declencher la validation côté backend ici
-                    //console.log("Challenge validated: ", previewImage);
-                    setPreviewImage(null);
-                    setShowCamera(false);
-                    onClose();
+                    if (previewImage) {
+                      onValidated(previewImage); // on appelle handleSubmit du HomeScreen
+                      setPreviewImage(null);
+                      setShowCamera(false);
+                      onClose();
+                    }
                   }}
                 >
                   <Text style={styles.submitModalText}> Submit </Text>
@@ -162,14 +164,10 @@ export default function ValidateModal({ onClose }) {
               </View>
             ) : (
               <>
-                <View style={styles.challengeDescription}>
-                  {/* sera dynamique quand on va recuperer les challenges*/}
+                <View style={styles.modalDescription}>
                   <Text>
-                    {" "}
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                    do eiusmod tempor incididunt ut labore et dolore magna
-                    aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-                    ullamco laboris nisi ut aliquip ex ea commodo consequat.{" "}
+                    Take a photo of your completed challenge or upload one from
+                    your device
                   </Text>
                 </View>
                 <TouchableOpacity
@@ -250,13 +248,12 @@ const styles = StyleSheet.create({
     flex: 1, // tout l'espace dispo verticalement
     alignItems: "center",
   },
-
   button: {
     backgroundColor: "#0F4B34",
     width: "90%",
     padding: 12,
     borderRadius: 6,
-    marginTop: 30,
+    marginTop: 50,
   },
   button2: {
     backgroundColor: "#ffffff",
@@ -277,8 +274,8 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
   },
-  challengeDescription: {
-    marginTop: "10%",
+  modalDescription: {
+    marginTop: "20%",
     padding: 20,
     backgroundColor: "#dddddd5b",
     width: "90%",

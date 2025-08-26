@@ -6,7 +6,7 @@ const initialState = {
   token: null,
   isAuthenticated: false,
   photos: [],
-  currentPoints: 0
+  currentPoints: 0,
 };
 
 export const userSlice = createSlice({
@@ -29,7 +29,7 @@ export const userSlice = createSlice({
       },
     logout: (state, action) => {
       return initialState; // reset complet au logout
-    }
+    },
   },
 });
 

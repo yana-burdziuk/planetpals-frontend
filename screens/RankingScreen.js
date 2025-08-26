@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from "react-native";
 import Header from "../components/Header"; // Header réutilisable avec titre et points utilisateur
 import { useSelector } from "react-redux";
 
-const API_URL = "http://192.168.1.27:3000"; // téléphone physique
+const API_URL = "http://192.168.1.158:3000"; // téléphone physique
 
 export default function RankingScreen() {
   const user = useSelector((state) => state.user);

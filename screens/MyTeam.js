@@ -17,7 +17,7 @@ export default function MyTeam() {
   useEffect(() => {
     const fetchTeam = async () => {
       try {
-        const res = await fetch("http://192.168.1.27:3000/users/team", {
+        const res = await fetch("http://192.168.1.158:3000/users/team", {
           headers: { Authorization: `Bearer ${user.token}` },
         });
         const data = await res.json();

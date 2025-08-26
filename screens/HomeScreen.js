@@ -1,40 +1,108 @@
-import React, {useState} from "react";
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Text, View, ScrollView } from "react-native";
 import Header from "../components/Header";
 import ChallengeCard from "../components/ChallengeCard";
 import ValidateModal from "../components/ValidateModal";
 import { useSelector } from "react-redux";
 
+export default function HomeScreen({ navigation }) {
 
-export default function HomeScreen({navigation}) {
   const user = useSelector((state) => state.user);
 
-  // le composant parent va toujours gerer la visibilité de la modale
-  
-  const [showValidateModal, setShowValidateModal] = useState(true);
+  const [dailyChallenges, setDailyChallenges] = useState([]);
+  const [weeklyChallenges, setWeeklyChallenges] = useState([]);
+  const [showValidateModal, setShowValidateModal] = useState(false);
+  const [selectedChallenge, setSelectedChallenge] = useState(null);
+
   const co2Count = 2.5 + " kg"; // temporaire
-  
 
-  // Exemple de données (à dynamiser avec l’API plus tard)
-  const dailyChallenges = [
-    { id: "d1", title: "Vegetarian meal", points: 150, CO2: 0.8, done: true },
-    { id: "d2", title: "Turn off the PC", points: 150, CO2: 0.8, done: true },
-    { id: "d3", title: "Turn off the light", points: 10, CO2: 0.4, done: false },
-  ];
+  // fetch des challenges
 
-  const weeklyChallenges = [
-    { id: "w1", title: "Utiliser sa gourde", points: 150, CO2: 0.8, done: false },
-    { id: "w2", title: "Limiter l’usage de la clim", points: 200, CO2: 1.2, done: false },
-  ];
+  useEffect(() => {
+    const fetchChallenges = async () => {
+      try {
+        const res = await fetch(
+          "http://192.168.1.158:3000/challenges/userChallenges",
+          {
+            headers: { Authorization: `Bearer ${user.token}` },
+          }
+        );
+        const data = await res.json();
+        if (data.result) {
+          const daily = data.challenges.filter((challenge) => challenge.frequency === "daily");
+          const weekly = data.challenges.filter(
+            (challenge) => challenge.frequency === "weekly"
+          );
+
+          //recup les challenges
+          setDailyChallenges(daily);
+          setWeeklyChallenges(weekly);
+        } else {
+          console.log("Error fetching challenges:", data.error);
+        }
+      } catch (error) {
+        console.log("Error fetching challenges:", error);
+      }
+    };
+
+    fetchChallenges();
+  }, [user.token]);
 
   const openDetails = (challenge) => {
     navigation.navigate("ChallengesScreen", {
-      challengeId: challenge.id,
+      challengeId: challenge.planningId,
       title: challenge.title,
       points: challenge.points,
-      co2: challenge.CO2,
+      CO2: challenge.co2,
       done: challenge.done,
     });
+  };
+
+  const handleSubmit = async (challenge, photoUrl = null) => {
+    if (challenge.photoRequired && !photoUrl) {
+      setSelectedChallenge(challenge); // on garde en "memoire" pour la modale
+      setShowValidateModal(true);
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `http://192.168.1.158:3000/challenges/${challenge.planningId}/submit`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ photoUrl }),
+        }
+      );
+
+      const data = await res.json();
+      if (data.result) {
+        // on met à jour l’état dailyChallenges en utilisant la fonction (on reçoit la valeur actuelle = previousValue )
+        //comme c'est async on est sur de recup la dernière valeur
+        setDailyChallenges((previousValue) =>
+          // on parcours le tableau
+          previousValue.map((prevChallenge) =>
+            //si pour chaque challenge le planningId correspond à celui qu'on vient de soummetre
+            prevChallenge.planningId === challenge.planningId
+              ? //alors on retourne un nouvvel objet avec done : true, sinon rien ne change
+                { ...prevChallenge, done: true }
+              : prevChallenge
+          )
+        );
+        setWeeklyChallenges((previousValue) =>
+          previousValue.map((prevChallenge) =>
+            prevChallenge.planningId === challenge.planningId
+              ? { ...prevChallenge, done: true }
+              : prevChallenge
+          )
+        );
+      }
+    } catch (err) {
+      console.log("Error submitting challenge:", err);
+    }
   };
 
   return (
@@ -62,15 +130,17 @@ export default function HomeScreen({navigation}) {
         <View style={styles.dailyTextContainer}>
           <Text style={styles.dailyText}>Daily challenges</Text>
         </View>
+
         {dailyChallenges.map((challenge) => (
-          <TouchableOpacity key={challenge.id} activeOpacity={0.8} onPress={() => openDetails(challenge)}>
-            <ChallengeCard
-              title={challenge.title}
-              points={challenge.points}
-              CO2={challenge.CO2}
-              done={challenge.done}
-            />
-          </TouchableOpacity>
+          <ChallengeCard
+            key={challenge.planningId}
+            title={challenge.title}
+            points={challenge.points}
+            CO2={challenge.co2}
+            done={challenge.done}
+            onPressCircle={() => handleSubmit(challenge)}
+            onPressCard={() => openDetails(challenge)}
+          />
         ))}
 
         {/* Weekly Challenges */}
@@ -78,19 +148,28 @@ export default function HomeScreen({navigation}) {
           <Text style={styles.dailyText}>Weekly challenges</Text>
         </View>
         {weeklyChallenges.map((challenge) => (
-          <TouchableOpacity key={challenge.id} activeOpacity={0.8} onPress={() => openDetails(challenge)}>
-            <ChallengeCard
-              title={challenge.title}
-              points={challenge.points}
-              CO2={challenge.CO2}
-              done={challenge.done}
-            />
-          </TouchableOpacity>
+          <ChallengeCard
+            key={challenge.planningId}
+            title={challenge.title}
+            points={challenge.points}
+            co2={challenge.co2}
+            done={challenge.done}
+            onPressCircle={() => handleSubmit(challenge)}
+            onPressCard={() => openDetails(challenge)}
+          />
         ))}
-        {showValidateModal && (
-          <ValidateModal onClose={() => setShowValidateModal(false)} />
-        )}
       </ScrollView>
+
+      {showValidateModal && selectedChallenge && (
+        <View style={styles.modalOverlay}>
+          <ValidateModal
+            onClose={() => setShowValidateModal(false)}
+            challenge={selectedChallenge} // on passe le challenge en question à la modale validate
+            token={user.token}
+            onValidated={(photoUrl) => handleSubmit(selectedChallenge, photoUrl)} // callback depuis validate modal quand c'est validé
+          />
+        </View>
+      )}
     </View>
   );
 }
@@ -137,5 +216,16 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "bold",
     color: "#0F172A",
+  },
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)", //  noir semi-transparent
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000, // pour être sûr que ça passe au-dessus
   },
 });

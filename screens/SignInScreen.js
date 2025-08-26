@@ -11,7 +11,7 @@ import { useDispatch } from "react-redux";
 import { loginSuccess } from "../reducers/user";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.1.27:3000"; // téléphone physique
+const API_URL = "http://192.168.1.158:3000"; // téléphone physique
 
 export default function SignInScreen({ navigation }) {
   const dispatch = useDispatch();
