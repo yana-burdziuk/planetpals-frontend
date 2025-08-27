@@ -77,8 +77,8 @@ export default function SignUpScreen({ navigation }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email,
-        username,
+        email: email.toLowerCase(),
+        username : username.toLowerCase(),
         password,
         departmentId: selectedDepartment._id,
       }),

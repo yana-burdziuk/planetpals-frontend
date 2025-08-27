@@ -29,7 +29,7 @@ export default function SignInScreen({ navigation }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        credentials,
+        credentials : credentials.toLowerCase(),
         password,
       }),
     }).then(async (response) => {
