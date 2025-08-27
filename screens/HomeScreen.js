@@ -6,7 +6,6 @@ import ValidateModal from "../components/ValidateModal";
 import { useSelector } from "react-redux";
 
 export default function HomeScreen({ navigation }) {
-
   const user = useSelector((state) => state.user);
 
   const [dailyChallenges, setDailyChallenges] = useState([]);
@@ -29,7 +28,9 @@ export default function HomeScreen({ navigation }) {
         );
         const data = await res.json();
         if (data.result) {
-          const daily = data.challenges.filter((challenge) => challenge.frequency === "daily");
+          const daily = data.challenges.filter(
+            (challenge) => challenge.frequency === "daily"
+          );
           const weekly = data.challenges.filter(
             (challenge) => challenge.frequency === "weekly"
           );
@@ -105,6 +106,38 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
+  const handleCancelSubmit = async (challenge) => {
+    try {
+      const res = await fetch(
+        `http://192.168.1.158:3000/challenges/${challenge.planningId}/submission`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+      const data = await res.json();
+      if (data.result) {
+
+        setDailyChallenges((previousValue) =>
+          previousValue.map((challenge) =>
+            challenge.planningId === challenge.planningId ? { ...challenge, done: false } : challenge
+          )
+        );
+        setWeeklyChallenges((previousValue) =>
+          previousValue.map((challenge) =>
+            challenge.planningId === challenge.planningId ? { ...challenge, done: false } : challenge
+          )
+        );
+      } else {
+        console.log("Error cancelling submission:", data.error);
+      }
+    } catch (error) {
+      console.log("Error cancelling submission:", error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -138,7 +171,7 @@ export default function HomeScreen({ navigation }) {
             points={challenge.points}
             CO2={challenge.co2}
             done={challenge.done}
-            onPressCircle={() => handleSubmit(challenge)}
+            onPressCircle={() => challenge.done ? handleCancelSubmit(challenge) : handleSubmit(challenge)}
             onPressCard={() => openDetails(challenge)}
           />
         ))}
@@ -154,7 +187,7 @@ export default function HomeScreen({ navigation }) {
             points={challenge.points}
             co2={challenge.co2}
             done={challenge.done}
-            onPressCircle={() => handleSubmit(challenge)}
+            onPressCircle={() => challenge.done ? handleCancelSubmit(challenge) : handleSubmit(challenge)}
             onPressCard={() => openDetails(challenge)}
           />
         ))}
@@ -166,7 +199,9 @@ export default function HomeScreen({ navigation }) {
             onClose={() => setShowValidateModal(false)}
             challenge={selectedChallenge} // on passe le challenge en question à la modale validate
             token={user.token}
-            onValidated={(photoUrl) => handleSubmit(selectedChallenge, photoUrl)} // callback depuis validate modal quand c'est validé
+            onValidated={(photoUrl) =>
+              handleSubmit(selectedChallenge, photoUrl)
+            } // callback depuis validate modal quand c'est validé
           />
         </View>
       )}

@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text, StyleSheet,TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { FontAwesome } from "@expo/vector-icons"; 
 
 export default function ChallengeCard({ title, points, CO2, done = false, onPressCircle, onPressCard }) {
 
@@ -15,10 +16,15 @@ export default function ChallengeCard({ title, points, CO2, done = false, onPres
          {/* le reste de la card est cliquable */}
        
           <Text style={styles.title}>{title}</Text>
+
         {/* cercle cliquable pour valider */}
         
-     <TouchableOpacity style={styles.circle} onPress={onPressCircle}>
-          {done && <View style={styles.checkedCircle} />}
+     <TouchableOpacity onPress={onPressCircle}>
+        {done ? (
+              <FontAwesome name="check-circle" size={24} color="#0F4B34" />
+            ) : (
+              <FontAwesome name="circle-thin" size={24} color="#0F4B34" />
+            )}
         </TouchableOpacity>
       </View>
       <View style={styles.bottomRow}>
@@ -74,22 +80,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#000",
     maxWidth: "85%", // si le texte est trop gros ça ne va pas depasser et faire bouger le circle
-  },
-  circle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: "#0F4B34",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkedCircle: {
-    // en fait c'est un mini circle dans le circle parent
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#0F4B34",
   },
   bottomRow: {
     flexDirection: "row",
