@@ -9,54 +9,129 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from "react-native";
-import Header from "../components/Header"; // ton header maison
+import Header from "../components/Header";
 import ValidateModal from "../components/ValidateModal";
 import { useSelector } from "react-redux";
 
+/** À ajuster selon mon réseau local quand je change d’endroit */
+const API_URL = "http://192.168.1.158:3000";
+
 export default function ChallengeScreen({ route }) {
   const user = useSelector((state) => state.user);
-  // récupération du challengeId passé depuis HomeScreen
+
+  // l’ID du challenge (planningId) passé depuis HomeScreen
   const { challengeId } = route.params || {};
-  // on stocke le challenge recupéré depuis le backend, sur lequel on est
+
+  // données du challenge courant (récupérées depuis le backend)
   const [challenge, setChallenge] = useState(null);
-  // state pour stocker la liste des commentaires du challenge
+
+  // liste des commentaires + champ de saisie
   const [comments, setComments] = useState([]);
+  const [comment, setComment] = useState("");
+
+  // activité (photos postées sur ce défi)
+  const [activity, setActivity] = useState([]);
+
+  // petits états d’UI
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [loadingActivity, setLoadingActivity] = useState(false);
+  const [posting, setPosting] = useState(false);
   const [showValidateModal, setShowValidateModal] = useState(false);
 
-  // fetch du challenge qui correspond au challengeId
+  /** 1) Je récupère tous les challenges de l’utilisateur,
+   *    puis je garde celui dont le planningId === challengeId.
+   *    -> GET /challenges/userChallenges (token obligatoire)
+   */
   useEffect(() => {
-    const fetchChallenge = async () => {
+    if (!challengeId || !user || !user.token) return;
+
+    async function fetchChallenge() {
       try {
-        // on appelle la route /userChallenges pour récupérer tous les challenges du user
-        const res = await fetch(
-          "http://192.168.1.158:3000/challenges/userChallenges",
-          {
-            headers: { Authorization: `Bearer ${user.token}` },
-          }
-        );
+        const res = await fetch(`${API_URL}/challenges/userChallenges`, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
         const data = await res.json();
 
         if (data.result) {
-          // on cherche le challenge correspondant au planningId
-          const foundChallenge = data.challenges.find(
-            (challenge) => challenge.planningId === challengeId
+          const found = (data.challenges || []).find(
+            (c) => c.planningId === challengeId
           );
-          setChallenge(foundChallenge); // stockage dans state pour afficher après
+          setChallenge(found || null);
         } else {
           console.log("Error fetching challenge:", data.error);
         }
       } catch (error) {
         console.log("Error fetching challenge:", error);
       }
-    };
+    }
 
     fetchChallenge();
-  }, [challengeId, user.token]);
+  }, [challengeId, user]);
 
+  /** 2) Je charge les commentaires de ce défi
+   *    -> GET /challenges/:planningId/comments (lecture publique)
+   */
+  useEffect(() => {
+    if (!challengeId) return;
+
+    async function loadComments() {
+      try {
+        setLoadingComments(true);
+        const res = await fetch(`${API_URL}/challenges/${challengeId}/comments`);
+        const data = await res.json();
+        if (data.result) {
+          // attendu: [{ user, content, createdAt }, ...]
+          setComments(data.comments || []);
+        } else {
+          console.log("Error loading comments:", data.error);
+        }
+      } catch (e) {
+        console.log("Network error (comments):", e);
+      }
+      setLoadingComments(false);
+    }
+
+    loadComments();
+  }, [challengeId]);
+
+  /** 3) Je charge l’activité (photos postées) pour ce défi
+   *    -> GET /challenges/:planningId/activity
+   */
+  useEffect(() => {
+    if (!challengeId) return;
+
+    async function loadActivity() {
+      try {
+        setLoadingActivity(true);
+        const res = await fetch(
+          `${API_URL}/challenges/${challengeId}/activity`
+        );
+        const data = await res.json();
+        if (data.result) {
+          // attendu: [{ user, type:'photo', photoUrl, submittedAt }, ...]
+          setActivity(data.activity || []);
+        } else {
+          console.log("Error loading activity:", data.error);
+        }
+      } catch (e) {
+        console.log("Network error (activity):", e);
+      }
+      setLoadingActivity(false);
+    }
+
+    loadActivity();
+  }, [challengeId]);
+
+  /** 4) Je valide le challenge pour l’utilisateur.
+   *    -> POST /challenges/:planningId/submit (token obligatoire)
+   *    -> si photo requise, j’ouvre la modale ValidateModal
+   */
   const handleSubmit = async (photoUrl = null) => {
+    if (!challenge || !challenge.planningId) return;
+
     try {
       const res = await fetch(
-        `http://192.168.1.158:3000/challenges/${challenge.planningId}/submit`,
+        `${API_URL}/challenges/${challenge.planningId}/submit`,
         {
           method: "POST",
           headers: {
@@ -69,81 +144,160 @@ export default function ChallengeScreen({ route }) {
 
       const data = await res.json();
       if (data.result) {
+        // côté UI, j’indique que c’est fait
         setChallenge({ ...challenge, done: true });
+
+        // si une photo a été envoyée, je recharge l’activité pour voir la vignette
+        if (photoUrl) {
+          try {
+            const r = await fetch(
+              `${API_URL}/challenges/${challengeId}/activity`
+            );
+            const d = await r.json();
+            if (d.result) setActivity(d.activity || []);
+          } catch {}
+        }
+      } else {
+        console.log("Submit error:", data.error);
       }
     } catch (error) {
       console.log("Error submitting challenge:", error);
     }
   };
 
-  const onSendComment = () => {
-    if (!comment.trim()) return;
-    // TODO backend: POST /challenges/:id/comments
-    console.log("send comment:", comment);
-    setComment("");
+  /** 5) J’envoie un commentaire (facultatif).
+   *    -> POST /challenges/:planningId/comments { content }
+   *    -> token obligatoire
+   *    -> si le champ est vide, je n’envoie rien
+   */
+  const onSendComment = async () => {
+    const content = (comment || "").trim();
+    if (!content || !challengeId) return;
+
+    try {
+      setPosting(true);
+      const res = await fetch(`${API_URL}/challenges/${challengeId}/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ content }),
+      });
+      const data = await res.json();
+
+      if (data.result) {
+        // je vide le champ
+        setComment("");
+        // je recharge la liste pour voir mon commentaire
+        const r = await fetch(`${API_URL}/challenges/${challengeId}/comments`);
+        const d = await r.json();
+        if (d.result) setComments(d.comments || []);
+      } else {
+        console.log("Post comment error:", data.error);
+      }
+    } catch (e) {
+      console.log("Network error (post comment):", e);
+    }
+    setPosting(false);
   };
 
+  /** 6) Clic sur “Complete the challenge”
+   *    -> si photo requise: j’ouvre la modale (upload)
+   *    -> sinon: je soumets direct
+   */
   const onComplete = () => {
-    if (challenge?.photoRequired) {
+    if (challenge && challenge.photoRequired) {
       setShowValidateModal(true);
     } else {
       handleSubmit();
     }
   };
 
+  // points dans le Header (ce que Redux a déjà)
+  const headerCount =
+    user && typeof user.currentPoints !== "undefined"
+      ? String(user.currentPoints)
+      : "0";
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Header title="Details" count={user.currentPoints} />
+      <Header title="Details" count={headerCount} />
+
       <ScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: 28 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Titre */}
-        <Text style={styles.title}>{challenge?.title}</Text>
+        <Text style={styles.title}>
+          {challenge ? challenge.title : "Challenge"}
+        </Text>
 
         {/* Description */}
         <Section title="Description">
-          <Text style={styles.p}>{challenge?.description}</Text>
+          <Text style={styles.p}>
+            {challenge ? challenge.description : "-"}
+          </Text>
         </Section>
 
         {/* Why it’s important */}
         <Section title="Why it’s important">
-          <Text style={styles.p}>{challenge?.why}</Text>
+          <Text style={styles.p}>{challenge ? challenge.why : "-"}</Text>
         </Section>
 
         {/* Fun fact */}
-        <Section title="Fun Fact">
-          <Text style={styles.p}>{challenge?.funFact}</Text>
+        <Section title="Fun fact">
+          <Text style={styles.p}>{challenge ? challenge.funFact : "-"}</Text>
         </Section>
 
-        {/* Activity  
-        <Text style={styles.h2}>Activity</Text>
-        {mock.activity.map((a) => (
-          <View key={a.id} style={styles.activityItem}>
-            <View style={styles.avatar} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.activityText}>
-                <Text style={styles.bold}>{a.author}</Text> uploaded a photo
-              </Text>
+        {/* Activity */}
+        <Text style={[styles.h2, { marginTop: 16 }]}>Activity</Text>
+        {loadingActivity ? (
+          <Text style={styles.p}>Chargement…</Text>
+        ) : activity.length === 0 ? (
+          <Text style={styles.p}>Aucune activité pour le moment.</Text>
+        ) : (
+          activity.map((a, idx) => (
+            <View key={idx} style={styles.activityItem}>
+              {/* petit avatar “placeholder” */}
+              <View style={styles.avatar} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.activityText}>
+                  <Text style={styles.bold}>{a.user}</Text>{" "}
+                  {a.type === "photo" ? "a posté une photo" : "activité"}
+                </Text>
+                <Text style={{ color: "#64748B", fontSize: 12 }}>
+                  {new Date(a.submittedAt).toLocaleString()}
+                </Text>
+              </View>
+              {/* vignette si on a une URL de photo */}
+              {a.photoUrl ? (
+                <Image source={{ uri: a.photoUrl }} style={styles.thumb} />
+              ) : null}
             </View>
-            <Image source={{ uri: a.thumbnail }} style={styles.thumb} />
-          </View>
-        ))}
+          ))
+        )}
 
-        {/* Comments  
+        {/* Comments */}
         <Text style={[styles.h2, { marginTop: 16 }]}>Comments</Text>
-        {mock.comments.map((c) => (
-          <View key={c.id} style={styles.commentItem}>
-            <View style={styles.avatarSmall} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.bold}>{c.author}</Text>
-              <Text style={styles.p}>{c.text}</Text>
+        {loadingComments ? (
+          <Text style={styles.p}>Chargement…</Text>
+        ) : comments.length === 0 ? (
+          <Text style={styles.p}>Aucun commentaire pour le moment.</Text>
+        ) : (
+          comments.map((c, idx) => (
+            <View key={idx} style={styles.commentItem}>
+              <View style={styles.avatarSmall} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.bold}>{c.user}</Text>
+                <Text style={styles.p}>{c.content}</Text>
+              </View>
             </View>
-          </View>
-        ))}
+          ))
+        )}
 
-        {/* Add a comment  
+        {/* Add a comment (facultatif) */}
         <Text style={styles.h3}>Leave a comment</Text>
         <TextInput
           style={styles.input}
@@ -152,16 +306,21 @@ export default function ChallengeScreen({ route }) {
           onChangeText={setComment}
           multiline
         />
-        <TouchableOpacity style={styles.sendBtn} onPress={onSendComment}>
-          <Text style={styles.sendText}>Send</Text>
-        </TouchableOpacity> */}
+        <TouchableOpacity
+          style={styles.sendBtn}
+          onPress={onSendComment}
+          disabled={posting}
+        >
+          <Text style={styles.sendText}>{posting ? "Sending..." : "Send"}</Text>
+        </TouchableOpacity>
 
-        {/* Complete challenge */}
+        {/* Valider le challenge */}
         <TouchableOpacity style={styles.primaryBtn} onPress={onComplete}>
           <Text style={styles.primaryText}>Complete the challenge</Text>
         </TouchableOpacity>
       </ScrollView>
-      {/* ValidateModal */}
+
+      {/* Modale de validation (photo) */}
       {showValidateModal && challenge && (
         <ValidateModal
           challenge={challenge}
@@ -176,7 +335,7 @@ export default function ChallengeScreen({ route }) {
   );
 }
 
-/** Composant section */
+/** Petit composant “section” réutilisable */
 function Section({ title, children }) {
   return (
     <View style={styles.section}>
