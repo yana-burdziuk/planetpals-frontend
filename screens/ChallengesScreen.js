@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from "react-native";
-import Header from "../components/Header"; // ton header maison
+import Header from "../components/Header"; // header maison
 import ValidateModal from "../components/ValidateModal";
 import { useDispatch, useSelector } from "react-redux";
 import { updatePoints } from "../reducers/user";
