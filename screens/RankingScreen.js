@@ -1,33 +1,47 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import Header from "../components/Header"; // Header réutilisable avec titre et points utilisateur
+import { View, Text, StyleSheet, ScrollView, RefreshControl } from "react-native";
+import Header from "../components/Header";
 import { useSelector } from "react-redux";
 
-const API_URL = "http://192.168.1.158:3000"; // téléphone physique
+const API_URL = "http://192.168.1.158:3000";
 
 export default function RankingScreen() {
   const user = useSelector((state) => state.user);
   const [departments, setDepartments] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchDepartments = async () => {
+    try {
+      setRefreshing(true);
+      const res = await fetch(`${API_URL}/depts`);
+      const data = await res.json();
+      
+      if (data.result) {
+        const sortedDepts = data.departments.sort(
+        // pour que ça s'affiche dans le bon ordre 
+          (a, b) => b.totalPoints - a.totalPoints
+        );
+        setDepartments(sortedDepts);
+      }
+    } catch (error) {
+      console.error("Error fetching departments:", error);
+    } {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const res = await fetch(`${API_URL}/depts`);
-        const data = await res.json();
-
-        if (data.result) {
-          const sortedDepts = data.departments.sort(
-          // pour que ça s'affiche dans le bon ordre 
-            (a,b) => b.totalPoints - a.totalPoints
-          )
-          setDepartments(sortedDepts);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
     fetchDepartments();
   }, []);
+
+  // permet de se rafraîchir automatiquement quand les points du user changent
+  useEffect(() => {
+    fetchDepartments();
+  }, [user.currentPoints]);
+
+  const onRefresh = () => {
+    fetchDepartments();
+  };
 
   return (
     <View style={styles.container}>
@@ -38,19 +52,47 @@ export default function RankingScreen() {
       <ScrollView
         contentContainerStyle={styles.scrollContent} // padding et centrage
         showsVerticalScrollIndicator={false} // retire la scrollbar
+        // prop pour pouvoir faire pull to refresh -> natif chez iOS et android
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         <Text style={styles.title}>Department ranking</Text>
-
-        {/* Affichage de chaque département avec sa position, son nom et ses points */}
-        {departments.map((dept, index) => (
-          <View key={dept._id} style={styles.rankCard}>
-            <Text style={styles.rankNumber}>{index + 1}</Text>
-            <Text style={styles.department}>{dept.name}</Text>
-            <Text style={styles.points}>
-              {dept.totalPoints} <Text style={styles.pointsBold}>points</Text>
-            </Text>
-          </View>
-        ))}
+        
+        {departments.map((dept, index) => {
+          {/* Affichage de chaque département avec sa position, son nom et ses points */}
+          // on recupère le département du user
+          const isUserDepartment = dept._id === user.departmentId;
+          return (
+            <View 
+              key={dept._id} 
+              style={[
+                styles.rankCard, 
+                isUserDepartment && styles.userDepartmentCard // si c'est le dept de user on va le highlight
+              ]}
+            >
+              <Text style={[
+                styles.rankNumber,
+                isUserDepartment
+              ]}>
+                {index + 1}
+              </Text>
+              <Text style={[
+                styles.department,
+                isUserDepartment && styles.userDepartmentText
+              ]}>
+                {dept.name}
+              </Text>
+              <Text style={[
+                styles.points,
+                isUserDepartment && styles.userPoints
+              ]}>
+                {dept.totalPoints}
+                <Text style={styles.pointsBold}> points</Text>
+              </Text>
+            </View>
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -80,6 +122,13 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 10,
     borderRadius: 15,
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+  userDepartmentCard: {
+    backgroundColor: "#E3EBFF",
+    borderColor: "#0F4B34",
+    borderWidth: 2,
   },
   rankNumber: {
     fontSize: 20,
@@ -92,6 +141,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#0F172A",
   },
+  userDepartmentText: {
+    fontWeight: "bold",
+    color: "#0F4B34",
+  },
   points: {
     fontSize: 14,
     color: "#0F4B34",
@@ -100,6 +153,10 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
     marginRight: 12,
+  },
+  userPoints: {
+    backgroundColor: "#0F4B34",
+    color: "white",
   },
   pointsBold: {
     fontWeight: "bold",

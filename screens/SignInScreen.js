@@ -8,7 +8,7 @@ import {
 } from "react-native";
 
 import { useDispatch } from "react-redux";
-import { loginSuccess } from "../reducers/user";
+import { loginSuccess } from "../reducers/user"; // pour remplir le slice user
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_URL = "http://192.168.1.158:3000"; // téléphone physique
@@ -24,12 +24,11 @@ export default function SignInScreen({ navigation }) {
       alert("All fields are mandatory");
       return;
     }
-
     fetch(`${API_URL}/users/signin`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        credentials : credentials.toLowerCase(),
+        credentials: credentials.toLowerCase(),
         password,
       }),
     }).then(async (response) => {
@@ -39,15 +38,26 @@ export default function SignInScreen({ navigation }) {
         return;
       }
       await AsyncStorage.setItem("userToken", data.token);
+      // on appelle users/me pour recuperer l'état complet de user côté DB (points etc )
+      const me = await fetch(`${API_URL}/users/me`, {
+        headers: {
+          Authorization: `Bearer ${data.token}`,
+        },
+      });
+      const meData = await me.json();
       dispatch(
         loginSuccess({
-          username: data.username,
-          email: data.email,
+          username: meData.username,
+          email: meData.email,
           token: data.token,
-          currentPoints: data.currentPoints ?? 0,
+          departmentId: meData.department?._id,
+          deptName: meData.department?.name,
+          currentPoints: meData.userTotalPoints ?? 0,
+          departmentCO2: meData.department.totalCo2SavingsPoints ?? 0,
         })
-      );
-      navigation.navigate("TabNavigator");
+      ),
+       // reset pour empêcher "back" vers SignIn
+      navigation.reset({routes : [{ name: "TabNavigator" }]})
     });
   }
 

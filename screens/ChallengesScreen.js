@@ -9,15 +9,17 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from "react-native";
-import Header from "../components/Header";
+import Header from "../components/Header"; // header maison
 import ValidateModal from "../components/ValidateModal";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { updatePoints } from "../reducers/user";
 
 /** À ajuster selon mon réseau local quand je change d’endroit */
 const API_URL = "http://192.168.1.158:3000";
 
 export default function ChallengeScreen({ route }) {
   const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
   // l’ID du challenge (planningId) passé depuis HomeScreen
   const { challengeId } = route.params || {};
@@ -53,10 +55,11 @@ export default function ChallengeScreen({ route }) {
         const data = await res.json();
 
         if (data.result) {
-          const found = (data.challenges || []).find(
-            (c) => c.planningId === challengeId
+        // on cherche le challenge correspondant au planningId
+          const foundChallenge = data.challenges.find(
+            (challenge) => challenge.planningId === challengeId
           );
-          setChallenge(found || null);
+          setChallenge(foundChallenge);
         } else {
           console.log("Error fetching challenge:", data.error);
         }
@@ -144,17 +147,19 @@ export default function ChallengeScreen({ route }) {
 
       const data = await res.json();
       if (data.result) {
-        // côté UI, j’indique que c’est fait
+        // mise à jour des points du user et du dept
+         dispatch(updatePoints(data.result));
+        // surtout pour changer le style de la card 
         setChallenge({ ...challenge, done: true });
 
         // si une photo a été envoyée, je recharge l’activité pour voir la vignette
         if (photoUrl) {
           try {
-            const r = await fetch(
+            const res = await fetch(
               `${API_URL}/challenges/${challengeId}/activity`
             );
-            const d = await r.json();
-            if (d.result) setActivity(d.activity || []);
+            const data = await res.json();
+            if (data.result) setActivity(data.activity);
           } catch {}
         }
       } else {
@@ -190,14 +195,14 @@ export default function ChallengeScreen({ route }) {
         // je vide le champ
         setComment("");
         // je recharge la liste pour voir mon commentaire
-        const r = await fetch(`${API_URL}/challenges/${challengeId}/comments`);
-        const d = await r.json();
-        if (d.result) setComments(d.comments || []);
+        const res = await fetch(`${API_URL}/challenges/${challengeId}/comments`);
+        const data = await res.json();
+        if (data.result) setComments(data.comments);
       } else {
         console.log("Post comment error:", data.error);
       }
-    } catch (e) {
-      console.log("Network error (post comment):", e);
+    } catch (error) {
+      console.log("Network error (post comment):", error);
     }
     setPosting(false);
   };
@@ -214,15 +219,10 @@ export default function ChallengeScreen({ route }) {
     }
   };
 
-  // points dans le Header (ce que Redux a déjà)
-  const headerCount =
-    user && typeof user.currentPoints !== "undefined"
-      ? String(user.currentPoints)
-      : "0";
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Header title="Details" count={headerCount} />
+      <Header title="Details" count={user.currentPoints} />
 
       <ScrollView
         style={styles.container}

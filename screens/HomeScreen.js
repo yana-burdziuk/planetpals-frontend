@@ -3,9 +3,11 @@ import { StyleSheet, Text, View, ScrollView } from "react-native";
 import Header from "../components/Header";
 import ChallengeCard from "../components/ChallengeCard";
 import ValidateModal from "../components/ValidateModal";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { updatePoints, updateDepartmentStats } from "../reducers/user";
 
 export default function HomeScreen({ navigation }) {
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
 
   const [dailyChallenges, setDailyChallenges] = useState([]);
@@ -13,7 +15,32 @@ export default function HomeScreen({ navigation }) {
   const [showValidateModal, setShowValidateModal] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
 
-  const co2Count = 2.5 + " kg"; // temporaire
+  // on recupère les stats du dept au chargement de l'app
+  useEffect(() => {
+    const fetchDepartmentStats = async () => {
+      try {
+        const res = await fetch(
+          "http://192.168.1.158:3000/challenges/department-stats",
+          {
+            headers: { Authorization: `Bearer ${user.token}` },
+          }
+        );
+        const data = await res.json();
+        if (data.result) {
+          dispatch(updateDepartmentStats({
+            totalCO2: data.stats.totalCO2,
+            totalPoints: data.stats.totalPoints
+          }));
+        }
+      } catch (error) {
+        console.log("Error fetching department stats:", error);
+      }
+    };
+
+    if (user.token) {
+      fetchDepartmentStats();
+    }
+  }, [user.token, dispatch]);
 
   // fetch des challenges
 
@@ -81,7 +108,10 @@ export default function HomeScreen({ navigation }) {
 
       const data = await res.json();
       if (data.result) {
-        // on met à jour l’état dailyChallenges en utilisant la fonction (on reçoit la valeur actuelle = previousValue )
+        // on met à jour le redux avec les nouveaux points
+          dispatch(updatePoints(data.result))
+
+         // on met à jour l’état dailyChallenges en utilisant la fonction (on reçoit la valeur actuelle = previousValue )
         //comme c'est async on est sur de recup la dernière valeur
         setDailyChallenges((previousValue) =>
           // on parcours le tableau
@@ -118,16 +148,23 @@ export default function HomeScreen({ navigation }) {
         }
       );
       const data = await res.json();
+      
       if (data.result) {
+        // on met à jour le redux avec les nouveaux points
+          dispatch(updatePoints(data.pointsUpdate));
 
         setDailyChallenges((previousValue) =>
-          previousValue.map((challenge) =>
-            challenge.planningId === challenge.planningId ? { ...challenge, done: false } : challenge
+          previousValue.map((prevChallenge) =>
+            prevChallenge.planningId === challenge.planningId
+              ? { ...prevChallenge, done: false }
+              : prevChallenge
           )
         );
         setWeeklyChallenges((previousValue) =>
-          previousValue.map((challenge) =>
-            challenge.planningId === challenge.planningId ? { ...challenge, done: false } : challenge
+          previousValue.map((prevChallenge) =>
+            prevChallenge.planningId === challenge.planningId
+              ? { ...prevChallenge, done: false }
+              : prevChallenge
           )
         );
       } else {
@@ -153,7 +190,9 @@ export default function HomeScreen({ navigation }) {
       >
         {/* Total CO2 */}
         <View style={styles.totalCO2Container}>
-          <Text style={styles.CO2ContainerText1}>{co2Count}</Text>
+          <Text style={styles.CO2ContainerText1}>
+            {user.departmentStats.totalCO2} kg
+          </Text>
           <Text style={styles.CO2ContainerText2}>
             of CO2 saved by your department so far
           </Text>
@@ -171,7 +210,11 @@ export default function HomeScreen({ navigation }) {
             points={challenge.points}
             CO2={challenge.co2}
             done={challenge.done}
-            onPressCircle={() => challenge.done ? handleCancelSubmit(challenge) : handleSubmit(challenge)}
+            onPressCircle={() =>
+              challenge.done
+                ? handleCancelSubmit(challenge)
+                : handleSubmit(challenge)
+            }
             onPressCard={() => openDetails(challenge)}
           />
         ))}
@@ -187,7 +230,11 @@ export default function HomeScreen({ navigation }) {
             points={challenge.points}
             co2={challenge.co2}
             done={challenge.done}
-            onPressCircle={() => challenge.done ? handleCancelSubmit(challenge) : handleSubmit(challenge)}
+            onPressCircle={() =>
+              challenge.done
+                ? handleCancelSubmit(challenge)
+                : handleSubmit(challenge)
+            }
             onPressCard={() => openDetails(challenge)}
           />
         ))}

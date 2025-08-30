@@ -3,13 +3,44 @@ import { TouchableOpacity, StyleSheet, Text, View, Alert } from "react-native";
 import Header from "../components/Header";
 import Badge from "../components/Badge";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../reducers/user";
+import {logout, updatePoints} from "../reducers/user";
+import { useEffect } from "react";
 
 export default function ProfileScreen({navigation}) {
   const dispatch = useDispatch();
   // recup depuis le redux
-  const username = useSelector((state) => state.user.username);
-  const currentPoints = useSelector((state) => state.user.currentPoints);
+  const user = useSelector((state) => state.user);
+  const { username, currentPoints } = user;
+
+  // on recupère les dernières données utilisateur au chargement
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const res = await fetch("http://192.168.1.158:3000/users/me", {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+        const data = await res.json();
+        
+        if (data.result) {
+          // on met à jour le Redux si nécessaire
+          if (data.userTotalPoints !== currentPoints) {
+            dispatch(updatePoints({
+              userPoints: data.userTotalPoints,
+              userCO2: data.userTotalCo2SavingsPoints,
+              deptPoints: data.department.totalPoints,
+              deptCO2: data.department.totalCo2SavingsPoints
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    if (user.token) {
+      fetchUserData();
+    }
+  }, [user.token, currentPoints]);
 
   //pour l'instant on a juste un tableau des badges, à voir pour créer peut être une API et transmettre la logique au backend
   const existingBadges = [
