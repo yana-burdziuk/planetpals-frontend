@@ -4,17 +4,17 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Image,
-  TextInput,
   TouchableOpacity,
   SafeAreaView,
 } from "react-native";
 import Header from "../components/Header"; // ton header maison
 import ValidateModal from "../components/ValidateModal";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { updatePoints } from "../reducers/user";
 
 export default function ChallengeScreen({ route }) {
   const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
   // récupération du challengeId passé depuis HomeScreen
   const { challengeId } = route.params || {};
   // on stocke le challenge recupéré depuis le backend, sur lequel on est
@@ -69,6 +69,9 @@ export default function ChallengeScreen({ route }) {
 
       const data = await res.json();
       if (data.result) {
+        // mise à jour des points du user et du dept
+         dispatch(updatePoints(data.result));
+        // surtout pour changer le style de la card 
         setChallenge({ ...challenge, done: true });
       }
     } catch (error) {

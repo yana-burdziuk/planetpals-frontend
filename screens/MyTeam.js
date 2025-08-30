@@ -1,38 +1,53 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import Header from "../components/Header";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { updateDepartmentStats } from "../reducers/user";
 
 export default function MyTeam() {
+  const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
+  const departmentStats = useSelector((state) => state.user.departmentStats);
   const [teamMembers, setTeamMembers] = useState([]);
-  const [departmentStats, setDepartmentStats] = useState({
-    deptName : "",
-    totalPoints: 0, 
-    totalCO2: 0,
-  });
+  //refreshing est un state local qui sert à indiquer si la donnée est en train d’être chargée
+  // c'est souvent utilisé poiur le fornt, afficher pull to refresh par exemple, considérée comme bonne pratique
+  const [refreshing, setRefreshing] = useState(false);
 
-  const { deptName, totalPoints, totalCO2 } = departmentStats;
-
-  useEffect(() => {
-    const fetchTeam = async () => {
-      try {
-        const res = await fetch("http://192.168.1.158:3000/users/team", {
-          headers: { Authorization: `Bearer ${user.token}` },
-        });
-        const data = await res.json();
-
-        if (data.result) {
-          setTeamMembers(data.teamMembers);
-          setDepartmentStats(data.departmentStats);
+  const fetchTeamData = async () => {
+    try {
+      // en cours de chargement 
+      setRefreshing(true);
+      const res = await fetch("http://192.168.1.158:3000/users/team", {
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      const data = await res.json();
+      
+      if (data.result) {
+        setTeamMembers(data.teamMembers);
         
-        }
-      } catch (error) {
-        console.error("Error fetching team:", error);
+        // on met à jour le Redux avec les nouvelles stats du département
+        dispatch(updateDepartmentStats({
+          totalPoints: data.departmentStats.totalPoints,
+          totalCO2: data.departmentStats.totalCO2
+        }));
       }
-    };
-    fetchTeam();
+    } catch (error) {
+      console.error("Error fetching team:", error);
+    } {
+      // chargement terminado
+      setRefreshing(false);
+    }
+  };
+
+  // recup de données au chargement du composant et le changement de token (user se reco)
+  useEffect(() => {
+    fetchTeamData();
   }, [user.token]);
+
+  // update quand les points changent (après validation challenge p.ex)
+  useEffect(() => {
+    fetchTeamData();
+  }, [user.currentPoints]);
 
   return (
     <View style={styles.container}>
@@ -44,7 +59,9 @@ export default function MyTeam() {
 
         {/* Nom du département */}
         <View style={styles.departmentBox}>
-          <Text style={styles.departmentText}>{deptName}</Text>
+          <Text style={styles.departmentText}>
+            {departmentStats.name}
+          </Text>
         </View>
 
         {/* Stats département */}
@@ -52,12 +69,14 @@ export default function MyTeam() {
           <View style={styles.statBox}>
             <Text style={styles.statTitle}>Total points</Text>
             <Text style={styles.statValue}>
-              {totalPoints} points 
+              {departmentStats.totalPoints} points
             </Text>
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statTitle}>CO₂ savings</Text>
-            <Text style={styles.statValue}>{totalCO2} kg</Text>
+            <Text style={styles.statValue}>
+              {departmentStats.totalCO2} kg
+            </Text>
           </View>
         </View>
 
@@ -67,7 +86,7 @@ export default function MyTeam() {
             <View key={index} style={styles.memberCard}>
               <Text style={styles.memberName}>{member.username}</Text>
               <Text style={styles.memberPoints}>
-                {member.totalPoints} {""}
+                {member.totalPoints}{" "}
                 <Text style={styles.pointsBold}>points</Text>
               </Text>
             </View>

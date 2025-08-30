@@ -1,39 +1,39 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { FontAwesome } from "@expo/vector-icons"; 
+import { FontAwesome } from "@expo/vector-icons";
 
 export default function ChallengeCard({ title, points, CO2, done = false, onPressCircle, onPressCard }) {
 
   return (
-       <View
+    <View
       style={[
         styles.challengeCard,
         done ? styles.challengeCardDone : null, // style différent si validé
       ]}
     >
-       <TouchableOpacity style={{ flex: 1 }} onPress={onPressCard}>
-      <View style={styles.topRow}>
-         {/* le reste de la card est cliquable */}
+      <TouchableOpacity style={{ flex: 1 }} onPress={onPressCard}>
+        <View style={styles.topRow}>
+          {/* le reste de la card est cliquable */}
        
           <Text style={styles.title}>{title}</Text>
 
-        {/* cercle cliquable pour valider */}
+          {/* cercle cliquable pour valider */}
         
-     <TouchableOpacity onPress={onPressCircle}>
-        {done ? (
+          <TouchableOpacity onPress={onPressCircle}>
+            {done ? (
               <FontAwesome name="check-circle" size={24} color="#0F4B34" />
             ) : (
               <FontAwesome name="circle-thin" size={24} color="#0F4B34" />
             )}
-        </TouchableOpacity>
-      </View>
-      <View style={styles.bottomRow}>
-        <View style={styles.pointsPrice}>
-          {/* à dynamiser les points*/}
-          <Text style={styles.pointsText}> {points} pts</Text>
+          </TouchableOpacity>
         </View>
-        {/* à dynamiser la quantité de CO2*/}
-        <Text style={styles.CO2Text}> {CO2} kg of CO2 saved </Text>
+        <View style={styles.bottomRow}>
+          <View style={styles.pointsPrice}>
+            {/*points dynamisés*/}
+            <Text style={styles.pointsText}> {points} pts</Text>
+          </View>
+          {/* quantité de CO2 dynamisée*/}
+          <Text style={styles.CO2Text}> {CO2} kg of CO2 saved </Text>
         </View>
       </TouchableOpacity>
     </View>
