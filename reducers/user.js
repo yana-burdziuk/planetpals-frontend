@@ -15,6 +15,7 @@ const initialState = {
     totalCO2: 0,
     name: "",
   },
+  challenges : []
 };
 
 export const userSlice = createSlice({
@@ -50,6 +51,15 @@ export const userSlice = createSlice({
     addPoints: (state, action) => {
       state.currentPoints += action.payload;
     },
+    setUserChallenges: (state, action) => {
+      state.challenges = action.payload; // remplace tout
+    },
+    updateChallengeStatus: (state, action) => {
+      const { planningId, done } = action.payload;
+      state.challenges = state.challenges.map((challenge) =>
+        challenge.planningId === planningId ? { ...challenge, done } : challenge
+      );
+    },
     logout: (state, action) => {
       return initialState; // reset complet au logout
     },
@@ -62,6 +72,8 @@ export const {
   addPoints,
   updatePoints,
   updateDepartmentStats,
+  setUserChallenges,
+  updateChallengeStatus,
   logout,
 } = userSlice.actions;
 export default userSlice.reducer;

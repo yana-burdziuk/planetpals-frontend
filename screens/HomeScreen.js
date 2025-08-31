@@ -1,17 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View, ScrollView } from "react-native";
 import Header from "../components/Header";
 import ChallengeCard from "../components/ChallengeCard";
 import ValidateModal from "../components/ValidateModal";
 import { useSelector, useDispatch } from "react-redux";
-import { updatePoints, updateDepartmentStats } from "../reducers/user";
+import { updatePoints, updateDepartmentStats,setUserChallenges, updateChallengeStatus } from "../reducers/user";
 
 export default function HomeScreen({ navigation }) {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
-
-  const [dailyChallenges, setDailyChallenges] = useState([]);
-  const [weeklyChallenges, setWeeklyChallenges] = useState([]);
   const [showValidateModal, setShowValidateModal] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
 
@@ -40,7 +37,7 @@ export default function HomeScreen({ navigation }) {
     if (user.token) {
       fetchDepartmentStats();
     }
-  }, [user.token, dispatch]);
+    }, [user.token])
 
   // fetch des challenges
 
@@ -55,16 +52,7 @@ export default function HomeScreen({ navigation }) {
         );
         const data = await res.json();
         if (data.result) {
-          const daily = data.challenges.filter(
-            (challenge) => challenge.frequency === "daily"
-          );
-          const weekly = data.challenges.filter(
-            (challenge) => challenge.frequency === "weekly"
-          );
-
-          //recup les challenges
-          setDailyChallenges(daily);
-          setWeeklyChallenges(weekly);
+          dispatch(setUserChallenges(data.challenges))
         } else {
           console.log("Error fetching challenges:", data.error);
         }
@@ -75,6 +63,11 @@ export default function HomeScreen({ navigation }) {
 
     fetchChallenges();
   }, [user.token]);
+
+
+  // filtrer depuis Redux
+  const dailyChallenges = user.challenges.filter(challenge => challenge.frequency === "daily");
+  const weeklyChallenges = user.challenges.filter(challenge => challenge.frequency === "weekly");
 
   const openDetails = (challenge) => {
     navigation.navigate("ChallengesScreen", {
@@ -109,27 +102,8 @@ export default function HomeScreen({ navigation }) {
       const data = await res.json();
       if (data.result) {
         // on met à jour le redux avec les nouveaux points
-          dispatch(updatePoints(data.result))
-
-         // on met à jour l’état dailyChallenges en utilisant la fonction (on reçoit la valeur actuelle = previousValue )
-        //comme c'est async on est sur de recup la dernière valeur
-        setDailyChallenges((previousValue) =>
-          // on parcours le tableau
-          previousValue.map((prevChallenge) =>
-            //si pour chaque challenge le planningId correspond à celui qu'on vient de soummetre
-            prevChallenge.planningId === challenge.planningId
-              ? //alors on retourne un nouvvel objet avec done : true, sinon rien ne change
-                { ...prevChallenge, done: true }
-              : prevChallenge
-          )
-        );
-        setWeeklyChallenges((previousValue) =>
-          previousValue.map((prevChallenge) =>
-            prevChallenge.planningId === challenge.planningId
-              ? { ...prevChallenge, done: true }
-              : prevChallenge
-          )
-        );
+        dispatch(updatePoints(data.result))
+        dispatch(updateChallengeStatus({planningId : challenge.planningId, done : true}))
       }
     } catch (err) {
       console.log("Error submitting challenge:", err);
@@ -151,22 +125,8 @@ export default function HomeScreen({ navigation }) {
       
       if (data.result) {
         // on met à jour le redux avec les nouveaux points
-          dispatch(updatePoints(data.pointsUpdate));
-
-        setDailyChallenges((previousValue) =>
-          previousValue.map((prevChallenge) =>
-            prevChallenge.planningId === challenge.planningId
-              ? { ...prevChallenge, done: false }
-              : prevChallenge
-          )
-        );
-        setWeeklyChallenges((previousValue) =>
-          previousValue.map((prevChallenge) =>
-            prevChallenge.planningId === challenge.planningId
-              ? { ...prevChallenge, done: false }
-              : prevChallenge
-          )
-        );
+        dispatch(updatePoints(data.pointsUpdate));
+        dispatch(updateChallengeStatus({ planningId: challenge.planningId, done : false}))
       } else {
         console.log("Error cancelling submission:", data.error);
       }
@@ -191,10 +151,11 @@ export default function HomeScreen({ navigation }) {
         {/* Total CO2 */}
         <View style={styles.totalCO2Container}>
           <Text style={styles.CO2ContainerText1}>
-            {user.departmentStats.totalCO2} kg
+        {/*.toFixed(2) round à 2 chiffres*/}
+            {user.departmentStats.totalCO2?.toFixed()} kg
           </Text>
           <Text style={styles.CO2ContainerText2}>
-            of CO2 saved by your department so far
+            of CO₂ saved by your department so far
           </Text>
         </View>
 
@@ -228,7 +189,7 @@ export default function HomeScreen({ navigation }) {
             key={challenge.planningId}
             title={challenge.title}
             points={challenge.points}
-            co2={challenge.co2}
+            CO2={challenge.co2}
             done={challenge.done}
             onPressCircle={() =>
               challenge.done
