@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+} from "react-native";
 import Header from "../components/Header";
 import { useSelector } from "react-redux";
 
@@ -15,17 +21,18 @@ export default function RankingScreen() {
       setRefreshing(true);
       const res = await fetch(`${API_URL}/depts`);
       const data = await res.json();
-      
+
       if (data.result) {
         const sortedDepts = data.departments.sort(
-        // pour que ça s'affiche dans le bon ordre 
+          // pour que ça s'affiche dans le bon ordre
           (a, b) => b.totalPoints - a.totalPoints
         );
         setDepartments(sortedDepts);
       }
     } catch (error) {
       console.error("Error fetching departments:", error);
-    } {
+    }
+    {
       setRefreshing(false);
     }
   };
@@ -58,35 +65,42 @@ export default function RankingScreen() {
         }
       >
         <Text style={styles.title}>Department ranking</Text>
-        
+
         {departments.map((dept, index) => {
-          {/* Affichage de chaque département avec sa position, son nom et ses points */}
+          {
+            /* Affichage de chaque département avec sa position, son nom et ses points */
+          }
           // on recupère le département du user
           const isUserDepartment = dept._id === user.departmentId;
           return (
-            <View 
-              key={dept._id} 
+            <View
+              key={dept._id}
               style={[
-                styles.rankCard, 
-                isUserDepartment && styles.userDepartmentCard // si c'est le dept de user on va le highlight
+                styles.rankCard,
+                isUserDepartment && styles.userDepartmentCard, // si c'est le dept de user on va le highlight
               ]}
+              accessible={true}
+              accessibilityRole="text"
+              accessibilityLabel={`Rank ${index + 1}, Department ${
+                dept.name
+              }, ${dept.totalPoints} points${
+                isUserDepartment ? ", your department" : ""
+              }`}
             >
-              <Text style={[
-                styles.rankNumber,
-                isUserDepartment
-              ]}>
+              <Text style={[styles.rankNumber, isUserDepartment]}>
                 {index + 1}
               </Text>
-              <Text style={[
-                styles.department,
-                isUserDepartment && styles.userDepartmentText
-              ]}>
+              <Text
+                style={[
+                  styles.department,
+                  isUserDepartment && styles.userDepartmentText,
+                ]}
+              >
                 {dept.name}
               </Text>
-              <Text style={[
-                styles.points,
-                isUserDepartment && styles.userPoints
-              ]}>
+              <Text
+                style={[styles.points, isUserDepartment && styles.userPoints]}
+              >
                 {dept.totalPoints}
                 <Text style={styles.pointsBold}> points</Text>
               </Text>

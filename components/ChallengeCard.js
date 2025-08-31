@@ -2,8 +2,14 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 
-export default function ChallengeCard({ title, points, CO2, done = false, onPressCircle, onPressCard }) {
-
+export default function ChallengeCard({
+  title,
+  points,
+  CO2,
+  done = false,
+  onPressCircle,
+  onPressCard,
+}) {
   return (
     <View
       style={[
@@ -11,15 +17,22 @@ export default function ChallengeCard({ title, points, CO2, done = false, onPres
         done ? styles.challengeCardDone : null, // style différent si validé
       ]}
     >
-      <TouchableOpacity style={{ flex: 1 }} onPress={onPressCard}>
+      <TouchableOpacity
+        style={{ flex: 1 }}
+        onPress={onPressCard}
+        accessible={true}
+        accessibilityRole="button"
+      >
         <View style={styles.topRow}>
           {/* le reste de la card est cliquable */}
-       
           <Text style={styles.title}>{title}</Text>
-
           {/* cercle cliquable pour valider */}
-        
-          <TouchableOpacity onPress={onPressCircle}>
+          <TouchableOpacity
+            onPress={onPressCircle}
+            accessible={true}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: done }} // pour que le user comprenne dans quel état c'est
+          >
             {done ? (
               <FontAwesome name="check-circle" size={24} color="#0F4B34" />
             ) : (

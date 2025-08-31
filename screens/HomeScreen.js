@@ -4,7 +4,12 @@ import Header from "../components/Header";
 import ChallengeCard from "../components/ChallengeCard";
 import ValidateModal from "../components/ValidateModal";
 import { useSelector, useDispatch } from "react-redux";
-import { updatePoints, updateDepartmentStats,setUserChallenges, updateChallengeStatus } from "../reducers/user";
+import {
+  updatePoints,
+  updateDepartmentStats,
+  setUserChallenges,
+  updateChallengeStatus,
+} from "../reducers/user";
 
 export default function HomeScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -24,10 +29,12 @@ export default function HomeScreen({ navigation }) {
         );
         const data = await res.json();
         if (data.result) {
-          dispatch(updateDepartmentStats({
-            totalCO2: data.stats.totalCO2,
-            totalPoints: data.stats.totalPoints
-          }));
+          dispatch(
+            updateDepartmentStats({
+              totalCO2: data.stats.totalCO2,
+              totalPoints: data.stats.totalPoints,
+            })
+          );
         }
       } catch (error) {
         console.log("Error fetching department stats:", error);
@@ -37,7 +44,7 @@ export default function HomeScreen({ navigation }) {
     if (user.token) {
       fetchDepartmentStats();
     }
-    }, [user.token])
+  }, [user.token]);
 
   // fetch des challenges
 
@@ -52,7 +59,7 @@ export default function HomeScreen({ navigation }) {
         );
         const data = await res.json();
         if (data.result) {
-          dispatch(setUserChallenges(data.challenges))
+          dispatch(setUserChallenges(data.challenges));
         } else {
           console.log("Error fetching challenges:", data.error);
         }
@@ -64,10 +71,13 @@ export default function HomeScreen({ navigation }) {
     fetchChallenges();
   }, [user.token]);
 
-
   // filtrer depuis Redux
-  const dailyChallenges = user.challenges.filter(challenge => challenge.frequency === "daily");
-  const weeklyChallenges = user.challenges.filter(challenge => challenge.frequency === "weekly");
+  const dailyChallenges = user.challenges.filter(
+    (challenge) => challenge.frequency === "daily"
+  );
+  const weeklyChallenges = user.challenges.filter(
+    (challenge) => challenge.frequency === "weekly"
+  );
 
   const openDetails = (challenge) => {
     navigation.navigate("ChallengesScreen", {
@@ -102,8 +112,13 @@ export default function HomeScreen({ navigation }) {
       const data = await res.json();
       if (data.result) {
         // on met à jour le redux avec les nouveaux points
-        dispatch(updatePoints(data.result))
-        dispatch(updateChallengeStatus({planningId : challenge.planningId, done : true}))
+        dispatch(updatePoints(data.result));
+        dispatch(
+          updateChallengeStatus({
+            planningId: challenge.planningId,
+            done: true,
+          })
+        );
       }
     } catch (err) {
       console.log("Error submitting challenge:", err);
@@ -122,11 +137,16 @@ export default function HomeScreen({ navigation }) {
         }
       );
       const data = await res.json();
-      
+
       if (data.result) {
         // on met à jour le redux avec les nouveaux points
         dispatch(updatePoints(data.pointsUpdate));
-        dispatch(updateChallengeStatus({ planningId: challenge.planningId, done : false}))
+        dispatch(
+          updateChallengeStatus({
+            planningId: challenge.planningId,
+            done: false,
+          })
+        );
       } else {
         console.log("Error cancelling submission:", data.error);
       }
@@ -149,9 +169,14 @@ export default function HomeScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
       >
         {/* Total CO2 */}
-        <View style={styles.totalCO2Container}>
+        <View
+          style={styles.totalCO2Container}
+          accessible={true}
+          accessibilityRole="summary"
+          accessibilityLabel={`Total CO2 saved by your department so far: ${user.departmentStats.totalCO2?.toFixed()} kg`}
+        >
           <Text style={styles.CO2ContainerText1}>
-        {/*.toFixed(2) round à 2 chiffres*/}
+            {/*.toFixed(2) round à 2 chiffres*/}
             {user.departmentStats.totalCO2?.toFixed()} kg
           </Text>
           <Text style={styles.CO2ContainerText2}>
@@ -161,7 +186,9 @@ export default function HomeScreen({ navigation }) {
 
         {/* Daily Challenges */}
         <View style={styles.dailyTextContainer}>
-          <Text style={styles.dailyText}>Daily challenges</Text>
+          <Text style={styles.dailyText} accessibilityRole="header">
+            Daily challenges
+          </Text>
         </View>
 
         {dailyChallenges.map((challenge) => (
@@ -177,6 +204,8 @@ export default function HomeScreen({ navigation }) {
                 : handleSubmit(challenge)
             }
             onPressCard={() => openDetails(challenge)}
+            accessible={true}
+            accessibilityLabel={`${challenge.title}, ${challenge.points} points, ${challenge.co2} kg CO2`}
           />
         ))}
 
@@ -197,6 +226,8 @@ export default function HomeScreen({ navigation }) {
                 : handleSubmit(challenge)
             }
             onPressCard={() => openDetails(challenge)}
+            accessible={true}
+            accessibilityLabel={`${challenge.title}, ${challenge.points} points, ${challenge.co2} kg CO2`}
           />
         ))}
       </ScrollView>

@@ -7,12 +7,18 @@ export default function LandingPage({ navigation }) {
       <Image
         source={require("../assets/planetB.png")} // l'image en attendant qu'on trouve la bonne
         style={styles.image}
+        accessible={true}
+        accessibilityRole="image"
+        accessibilityLabel="Planet Pals logo"
       />
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.button}
           activeOpacity={0.7} // un effet sur le bouton au clic (70% visible, 30% transparent)
           onPress={() => navigation.navigate("SignUp")}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Create a new account"
         >
           <Text style={styles.buttonText}>Sign Up</Text>
         </TouchableOpacity>
@@ -20,6 +26,9 @@ export default function LandingPage({ navigation }) {
           style={styles.button}
           activeOpacity={0.7}
           onPress={() => navigation.navigate("SignIn")}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Sign into your existing account"
         >
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>

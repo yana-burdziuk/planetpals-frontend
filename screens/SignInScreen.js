@@ -56,8 +56,8 @@ export default function SignInScreen({ navigation }) {
           departmentCO2: meData.department.totalCo2SavingsPoints ?? 0,
         })
       ),
-       // reset pour empêcher "back" vers SignIn
-      navigation.reset({routes : [{ name: "TabNavigator" }]})
+        // reset pour empêcher "back" vers SignIn
+        navigation.reset({ routes: [{ name: "TabNavigator" }] });
     });
   }
 
@@ -78,6 +78,9 @@ export default function SignInScreen({ navigation }) {
           placeholder="your@email.com"
           placeholderTextColor="#999"
           autoCapitalize="none"
+          keyboardType="email-address" // indique à l'appareil d’afficher un clavier optimisé pour la saisie d’emails
+          accessible={true}
+          accessibilityLabel="Username or Email"
         />
       </View>
       {/* Password */}
@@ -91,6 +94,8 @@ export default function SignInScreen({ navigation }) {
           placeholder="Password"
           placeholderTextColor="#999"
           autoCapitalize="none"
+          accessible={true}
+          accessibilityLabel="Password"
         />
       </View>
       {/* Show Password */}
@@ -98,6 +103,9 @@ export default function SignInScreen({ navigation }) {
         <TouchableOpacity
           style={[styles.circle, showPassword && styles.checkedCircle]}
           onPress={() => setShowPassword(!showPassword)}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={showPassword ? "Hide password" : "Show password"}
         >
           {showPassword && <View style={styles.innerCircle} />}
         </TouchableOpacity>
@@ -109,6 +117,9 @@ export default function SignInScreen({ navigation }) {
           style={styles.submitButton}
           activeOpacity={0.7}
           onPress={submitSignInForm}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Sign in"
         >
           <Text style={styles.buttonText}>Submit</Text>
         </TouchableOpacity>
@@ -120,7 +131,12 @@ export default function SignInScreen({ navigation }) {
 
       <View style={styles.goBackContainer}>
         <Text style={styles.goBackText}>Don’t have an account yet?</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("SignUp")}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Create a new account"
+        >
           <Text style={styles.backToSignIn}>Create an account</Text>
         </TouchableOpacity>
       </View>
