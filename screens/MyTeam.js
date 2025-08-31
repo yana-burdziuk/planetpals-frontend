@@ -75,7 +75,8 @@ export default function MyTeam() {
           <View style={styles.statBox}>
             <Text style={styles.statTitle}>CO₂ savings</Text>
             <Text style={styles.statValue}>
-              {departmentStats.totalCO2} kg
+          {/*.toFixed(2) round à 2 chiffres*/}
+              {departmentStats.totalCO2?.toFixed()} kg
             </Text>
           </View>
         </View>

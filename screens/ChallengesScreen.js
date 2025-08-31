@@ -12,20 +12,21 @@ import {
 import Header from "../components/Header"; // header maison
 import ValidateModal from "../components/ValidateModal";
 import { useDispatch, useSelector } from "react-redux";
-import { updatePoints } from "../reducers/user";
+import { updatePoints, updateChallengeStatus} from "../reducers/user";
 
 /** À ajuster selon mon réseau local quand je change d’endroit */
 const API_URL = "http://192.168.1.158:3000";
 
 export default function ChallengeScreen({ route }) {
+  // l’ID du challenge (planningId) passé depuis HomeScreen
+  const { challengeId } = route.params;
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
-  // l’ID du challenge (planningId) passé depuis HomeScreen
-  const { challengeId } = route.params || {};
-
-  // données du challenge courant (récupérées depuis le backend)
-  const [challenge, setChallenge] = useState(null);
+  // recup du challenge depuis le redux
+const challenge = useSelector((state) =>
+  state.user.challenges?.find((challenge) => challenge.planningId === challengeId)
+);
 
   // liste des commentaires + champ de saisie
   const [comments, setComments] = useState([]);
@@ -38,66 +39,11 @@ export default function ChallengeScreen({ route }) {
   const [loadingComments, setLoadingComments] = useState(false);
   const [loadingActivity, setLoadingActivity] = useState(false);
   const [posting, setPosting] = useState(false);
+
+  // modale pour prendre la photo
   const [showValidateModal, setShowValidateModal] = useState(false);
 
-  /** 1) Je récupère tous les challenges de l’utilisateur,
-   *    puis je garde celui dont le planningId === challengeId.
-   *    -> GET /challenges/userChallenges (token obligatoire)
-   */
-  useEffect(() => {
-    if (!challengeId || !user || !user.token) return;
-
-    async function fetchChallenge() {
-      try {
-        const res = await fetch(`${API_URL}/challenges/userChallenges`, {
-          headers: { Authorization: `Bearer ${user.token}` },
-        });
-        const data = await res.json();
-
-        if (data.result) {
-        // on cherche le challenge correspondant au planningId
-          const foundChallenge = data.challenges.find(
-            (challenge) => challenge.planningId === challengeId
-          );
-          setChallenge(foundChallenge);
-        } else {
-          console.log("Error fetching challenge:", data.error);
-        }
-      } catch (error) {
-        console.log("Error fetching challenge:", error);
-      }
-    }
-
-    fetchChallenge();
-  }, [challengeId, user]);
-
-  /** 2) Je charge les commentaires de ce défi
-   *    -> GET /challenges/:planningId/comments (lecture publique)
-   */
-  useEffect(() => {
-    if (!challengeId) return;
-
-    async function loadComments() {
-      try {
-        setLoadingComments(true);
-        const res = await fetch(`${API_URL}/challenges/${challengeId}/comments`);
-        const data = await res.json();
-        if (data.result) {
-          // attendu: [{ user, content, createdAt }, ...]
-          setComments(data.comments || []);
-        } else {
-          console.log("Error loading comments:", data.error);
-        }
-      } catch (e) {
-        console.log("Network error (comments):", e);
-      }
-      setLoadingComments(false);
-    }
-
-    loadComments();
-  }, [challengeId]);
-
-  /** 3) Je charge l’activité (photos postées) pour ce défi
+    /** 1) Je charge l’activité (photos postées) pour ce défi
    *    -> GET /challenges/:planningId/activity
    */
   useEffect(() => {
@@ -125,7 +71,34 @@ export default function ChallengeScreen({ route }) {
     loadActivity();
   }, [challengeId]);
 
-  /** 4) Je valide le challenge pour l’utilisateur.
+  /** 2) Je charge les commentaires de ce défi
+   *    -> GET /challenges/:planningId/comments (lecture publique)
+   */
+  useEffect(() => {
+    if (!challengeId) return;
+
+    async function loadComments() {
+      try {
+        setLoadingComments(true);
+        const res = await fetch(`${API_URL}/challenges/${challengeId}/comments`);
+        const data = await res.json();
+        if (data.result) {
+          // attendu: [{ user, content, createdAt }, ...]
+          setComments(data.comments || []);
+        } else {
+          console.log("Error loading comments:", data.error);
+        }
+      } catch (e) {
+        console.log("Network error (comments):", e);
+      }
+      setLoadingComments(false);
+    }
+
+    loadComments();
+  }, [challengeId]);
+
+
+  /** 3) Je valide le challenge pour l’utilisateur.
    *    -> POST /challenges/:planningId/submit (token obligatoire)
    *    -> si photo requise, j’ouvre la modale ValidateModal
    */
@@ -148,9 +121,8 @@ export default function ChallengeScreen({ route }) {
       const data = await res.json();
       if (data.result) {
         // mise à jour des points du user et du dept
-         dispatch(updatePoints(data.result));
-        // surtout pour changer le style de la card 
-        setChallenge({ ...challenge, done: true });
+        dispatch(updatePoints(data.result));
+        dispatch(updateChallengeStatus({planningId : challenge.planningId, done : true }))
 
         // si une photo a été envoyée, je recharge l’activité pour voir la vignette
         if (photoUrl) {
@@ -169,8 +141,26 @@ export default function ChallengeScreen({ route }) {
       console.log("Error submitting challenge:", error);
     }
   };
+  
+  // Cancel submit
+  const handleCancelSubmit = async () => {
+    if (!challenge) return;
+    try {
+      const res = await fetch(`${API_URL}/challenges/${challenge.planningId}/submission`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      const data = await res.json();
+      if (data.result) {
+        dispatch(updatePoints(data.pointsUpdate));
+        dispatch(updateChallengeStatus({ planningId: challenge.planningId, done: false }));
+      }
+    } catch (error) {
+      console.log("Error cancelling submission:", error);
+    }
+  };
 
-  /** 5) J’envoie un commentaire (facultatif).
+  /** 4) J’envoie un commentaire (facultatif).
    *    -> POST /challenges/:planningId/comments { content }
    *    -> token obligatoire
    *    -> si le champ est vide, je n’envoie rien
@@ -207,7 +197,7 @@ export default function ChallengeScreen({ route }) {
     setPosting(false);
   };
 
-  /** 6) Clic sur “Complete the challenge”
+  /** 5) Clic sur “Complete the challenge”
    *    -> si photo requise: j’ouvre la modale (upload)
    *    -> sinon: je soumets direct
    */
@@ -256,7 +246,7 @@ export default function ChallengeScreen({ route }) {
         {loadingActivity ? (
           <Text style={styles.p}>Chargement…</Text>
         ) : activity.length === 0 ? (
-          <Text style={styles.p}>Aucune activité pour le moment.</Text>
+          <Text style={styles.p}>No activity yet.</Text>
         ) : (
           activity.map((a, idx) => (
             <View key={idx} style={styles.activityItem}>
@@ -284,7 +274,7 @@ export default function ChallengeScreen({ route }) {
         {loadingComments ? (
           <Text style={styles.p}>Chargement…</Text>
         ) : comments.length === 0 ? (
-          <Text style={styles.p}>Aucun commentaire pour le moment.</Text>
+          <Text style={styles.p}>No comments yet.</Text>
         ) : (
           comments.map((c, idx) => (
             <View key={idx} style={styles.commentItem}>
@@ -315,8 +305,17 @@ export default function ChallengeScreen({ route }) {
         </TouchableOpacity>
 
         {/* Valider le challenge */}
-        <TouchableOpacity style={styles.primaryBtn} onPress={onComplete}>
-          <Text style={styles.primaryText}>Complete the challenge</Text>
+         <TouchableOpacity
+          style={[
+            styles.primaryBtn,
+            challenge?.done && { backgroundColor: "#EF4444" },
+          ]}
+          onPress={challenge?.done ? handleCancelSubmit : onComplete}
+          activeOpacity={1} // pour pas qu'il y ait du transparent sur le bouton 
+        >
+           <Text style={styles.primaryText}>
+    {challenge?.done ? "Cancel submission" : "Complete the challenge"}
+  </Text>
         </TouchableOpacity>
       </ScrollView>
 
