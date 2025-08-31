@@ -55,10 +55,21 @@ export default function MyTeam() {
       <Header title="PlanetPals" count={user.currentPoints} />
 
       <View style={styles.content}>
-        <Text style={styles.pageTitle}>My Team</Text>
+        <Text
+          style={styles.pageTitle}
+          accessible={true}
+          accessibilityRole="header"
+        >
+          My Team
+        </Text>
 
         {/* Nom du département */}
-        <View style={styles.departmentBox}>
+        <View
+          style={styles.departmentBox}
+          accessible={true}
+          accessibilityRole="text"
+          accessibilityLabel={`Department: ${departmentStats.name}`}
+        >
           <Text style={styles.departmentText}>
             {departmentStats.name}
           </Text>
@@ -66,13 +77,23 @@ export default function MyTeam() {
 
         {/* Stats département */}
         <View style={styles.statRow}>
-          <View style={styles.statBox}>
+          <View
+            style={styles.statBox}
+            accessible={true}
+            accessibilityRole="text"
+            accessibilityLabel={`Total points: ${departmentStats.totalPoints}`}
+          >
             <Text style={styles.statTitle}>Total points</Text>
             <Text style={styles.statValue}>
               {departmentStats.totalPoints} points
             </Text>
           </View>
-          <View style={styles.statBox}>
+          <View
+            style={styles.statBox}
+            accessible={true}
+            accessibilityRole="text"
+            accessibilityLabel={`CO2 savings: ${departmentStats.totalCO2?.toFixed()} kilograms`}
+          >
             <Text style={styles.statTitle}>CO₂ savings</Text>
             <Text style={styles.statValue}>
           {/*.toFixed(2) round à 2 chiffres*/}
@@ -84,7 +105,13 @@ export default function MyTeam() {
         {/* Membres du département */}
         <ScrollView style={styles.membersContainer}>
           {teamMembers.map((member, index) => (
-            <View key={index} style={styles.memberCard}>
+            <View
+              key={index}
+              style={styles.memberCard}
+              accessible={true}
+              accessibilityRole="text"
+              accessibilityLabel={`${member.username}, ${member.totalPoints} points`}
+            >
               <Text style={styles.memberName}>{member.username}</Text>
               <Text style={styles.memberPoints}>
                 {member.totalPoints}{" "}

@@ -4,11 +4,20 @@ import { View, Text, StyleSheet } from "react-native";
 export default function Badge({ name, text, disabled = false, points }) {
   return (
     <View
+      accessible={true}
+      accessibilityRole="text"
+      accessibilityLabel={`${text}, ${points} points ${disabled ? ", disabled" : ""}`}
       style={
         disabled ? styles.inactiveBadgeContainer : styles.activeBadgeContainer
       }
     >
-      <Text style={styles.icon}>{name}</Text>
+      <Text
+        style={styles.icon}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no"
+      >
+        {name}
+      </Text>
       <Text style={styles.label}>{text}</Text>
       <Text style={styles.pointsText}>{points} pts</Text>
     </View>

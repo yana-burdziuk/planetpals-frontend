@@ -12,7 +12,7 @@ import {
 import Header from "../components/Header"; // header maison
 import ValidateModal from "../components/ValidateModal";
 import { useDispatch, useSelector } from "react-redux";
-import { updatePoints, updateChallengeStatus} from "../reducers/user";
+import { updatePoints, updateChallengeStatus } from "../reducers/user";
 
 /** À ajuster selon mon réseau local quand je change d’endroit */
 const API_URL = "http://192.168.1.158:3000";
@@ -24,9 +24,11 @@ export default function ChallengeScreen({ route }) {
   const dispatch = useDispatch();
 
   // recup du challenge depuis le redux
-const challenge = useSelector((state) =>
-  state.user.challenges?.find((challenge) => challenge.planningId === challengeId)
-);
+  const challenge = useSelector((state) =>
+    state.user.challenges?.find(
+      (challenge) => challenge.planningId === challengeId
+    )
+  );
 
   // liste des commentaires + champ de saisie
   const [comments, setComments] = useState([]);
@@ -43,7 +45,7 @@ const challenge = useSelector((state) =>
   // modale pour prendre la photo
   const [showValidateModal, setShowValidateModal] = useState(false);
 
-    /** 1) Je charge l’activité (photos postées) pour ce défi
+  /** 1) Je charge l’activité (photos postées) pour ce défi
    *    -> GET /challenges/:planningId/activity
    */
   useEffect(() => {
@@ -80,7 +82,9 @@ const challenge = useSelector((state) =>
     async function loadComments() {
       try {
         setLoadingComments(true);
-        const res = await fetch(`${API_URL}/challenges/${challengeId}/comments`);
+        const res = await fetch(
+          `${API_URL}/challenges/${challengeId}/comments`
+        );
         const data = await res.json();
         if (data.result) {
           // attendu: [{ user, content, createdAt }, ...]
@@ -96,7 +100,6 @@ const challenge = useSelector((state) =>
 
     loadComments();
   }, [challengeId]);
-
 
   /** 3) Je valide le challenge pour l’utilisateur.
    *    -> POST /challenges/:planningId/submit (token obligatoire)
@@ -122,7 +125,12 @@ const challenge = useSelector((state) =>
       if (data.result) {
         // mise à jour des points du user et du dept
         dispatch(updatePoints(data.result));
-        dispatch(updateChallengeStatus({planningId : challenge.planningId, done : true }))
+        dispatch(
+          updateChallengeStatus({
+            planningId: challenge.planningId,
+            done: true,
+          })
+        );
 
         // si une photo a été envoyée, je recharge l’activité pour voir la vignette
         if (photoUrl) {
@@ -141,19 +149,27 @@ const challenge = useSelector((state) =>
       console.log("Error submitting challenge:", error);
     }
   };
-  
+
   // Cancel submit
   const handleCancelSubmit = async () => {
     if (!challenge) return;
     try {
-      const res = await fetch(`${API_URL}/challenges/${challenge.planningId}/submission`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
+      const res = await fetch(
+        `${API_URL}/challenges/${challenge.planningId}/submission`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${user.token}` },
+        }
+      );
       const data = await res.json();
       if (data.result) {
         dispatch(updatePoints(data.pointsUpdate));
-        dispatch(updateChallengeStatus({ planningId: challenge.planningId, done: false }));
+        dispatch(
+          updateChallengeStatus({
+            planningId: challenge.planningId,
+            done: false,
+          })
+        );
       }
     } catch (error) {
       console.log("Error cancelling submission:", error);
@@ -185,7 +201,9 @@ const challenge = useSelector((state) =>
         // je vide le champ
         setComment("");
         // je recharge la liste pour voir mon commentaire
-        const res = await fetch(`${API_URL}/challenges/${challengeId}/comments`);
+        const res = await fetch(
+          `${API_URL}/challenges/${challengeId}/comments`
+        );
         const data = await res.json();
         if (data.result) setComments(data.comments);
       } else {
@@ -209,7 +227,6 @@ const challenge = useSelector((state) =>
     }
   };
 
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <Header title="Details" count={user.currentPoints} />
@@ -220,7 +237,7 @@ const challenge = useSelector((state) =>
         showsVerticalScrollIndicator={false}
       >
         {/* Titre */}
-        <Text style={styles.title}>
+        <Text style={styles.title} accessible={true} accessibilityRole="header">
           {challenge ? challenge.title : "Challenge"}
         </Text>
 
@@ -242,46 +259,85 @@ const challenge = useSelector((state) =>
         </Section>
 
         {/* Activity */}
-        <Text style={[styles.h2, { marginTop: 16 }]}>Activity</Text>
+        <Text
+          style={[
+            styles.h2,
+            {
+              marginTop: 16,
+            },
+          ]}
+          accessibilityRole="header"
+        >
+          Activity
+        </Text>
         {loadingActivity ? (
           <Text style={styles.p}>Chargement…</Text>
         ) : activity.length === 0 ? (
           <Text style={styles.p}>No activity yet.</Text>
         ) : (
-          activity.map((a, idx) => (
-            <View key={idx} style={styles.activityItem}>
+          activity.map((activity, index) => (
+            <View
+              key={index}
+              style={styles.activityItem}
+              accessible={true}
+              accessibilityLabel={`${
+                activity.user
+              } posted a photo on ${new Date(
+                activity.submittedAt
+              ).toLocaleDateString()}`}
+            >
               {/* petit avatar “placeholder” */}
               <View style={styles.avatar} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.activityText}>
-                  <Text style={styles.bold}>{a.user}</Text>{" "}
-                  {a.type === "photo" ? "a posté une photo" : "activité"}
+                  <Text style={styles.bold}>{activity.user}</Text>{" "}
+                  {activity.type === "photo" ? "posted a photo" : "activity"}
                 </Text>
                 <Text style={{ color: "#64748B", fontSize: 12 }}>
-                  {new Date(a.submittedAt).toLocaleString()}
+                  {new Date(activity.submittedAt).toLocaleString()}
                 </Text>
               </View>
               {/* vignette si on a une URL de photo */}
-              {a.photoUrl ? (
-                <Image source={{ uri: a.photoUrl }} style={styles.thumb} />
+              {activity.photoUrl ? (
+                <Image
+                  source={{ uri: activity.photoUrl }}
+                  style={styles.thumb}
+                  accessible={true}
+                  accessibilityLabel={`Photo posted by ${activity.user}`}
+                />
               ) : null}
             </View>
           ))
         )}
 
         {/* Comments */}
-        <Text style={[styles.h2, { marginTop: 16 }]}>Comments</Text>
+        <Text
+          style={[
+            styles.h2,
+            {
+              marginTop: 16,
+            },
+          ]}
+          accessibilityRole="header"
+        >
+          Comments
+        </Text>
         {loadingComments ? (
-          <Text style={styles.p}>Chargement…</Text>
+          <Text style={styles.p}>Loading</Text>
         ) : comments.length === 0 ? (
           <Text style={styles.p}>No comments yet.</Text>
         ) : (
-          comments.map((c, idx) => (
-            <View key={idx} style={styles.commentItem}>
+          comments.map((comment, index) => (
+            <View
+              key={index}
+              style={styles.commentItem}
+              accessible={true}
+              accessibilityLabel={`Comment by ${comment.user}: ${comment.content}`}
+            >
               <View style={styles.avatarSmall} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.bold}>{c.user}</Text>
-                <Text style={styles.p}>{c.content}</Text>
+                <Text style={styles.bold}>{comment.user}</Text>
+                <Text style={styles.p}>{comment.content}</Text>
               </View>
             </View>
           ))
@@ -295,27 +351,35 @@ const challenge = useSelector((state) =>
           value={comment}
           onChangeText={setComment}
           multiline
+          accessible={true}
+          accessibilityLabel="Type your comment here"
         />
         <TouchableOpacity
           style={styles.sendBtn}
           onPress={onSendComment}
           disabled={posting}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Send your comment for this challenge"
         >
           <Text style={styles.sendText}>{posting ? "Sending..." : "Send"}</Text>
         </TouchableOpacity>
 
         {/* Valider le challenge */}
-         <TouchableOpacity
+        <TouchableOpacity
           style={[
             styles.primaryBtn,
             challenge?.done && { backgroundColor: "#EF4444" },
           ]}
           onPress={challenge?.done ? handleCancelSubmit : onComplete}
-          activeOpacity={1} // pour pas qu'il y ait du transparent sur le bouton 
+          activeOpacity={1} // pour pas qu'il y ait du transparent sur le bouton
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={challenge?.done ? "Cancel submission" : "Complete the challenge"}
         >
-           <Text style={styles.primaryText}>
-    {challenge?.done ? "Cancel submission" : "Complete the challenge"}
-  </Text>
+          <Text style={styles.primaryText}>
+            {challenge?.done ? "Cancel submission" : "Complete the challenge"}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -338,7 +402,12 @@ const challenge = useSelector((state) =>
 function Section({ title, children }) {
   return (
     <View style={styles.section}>
-      <Text style={styles.h2}>{title}</Text>
+      <Text
+        style={styles.h2}
+        accessibilityRole="header"
+      >
+        {title}
+      </Text>
       <View style={styles.card}>{children}</View>
     </View>
   );
@@ -354,27 +423,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "700",
     color: "#0F172A",
     marginBottom: 12,
   },
   h2: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
     color: "#0F172A",
     marginBottom: 8,
   },
   h3: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "600",
     color: "#0F172A",
     marginTop: 12,
     marginBottom: 6,
   },
-  p: { color: "#1f2937", lineHeight: 20 },
-
-  section: { marginBottom: 14 },
+  p: {
+    color: "#1f2937",
+    lineHeight: 20, // hauteur de la card
+  },
+  section: {
+    marginBottom: 14,
+  },
   card: {
     backgroundColor: "white",
     borderRadius: 12,
@@ -382,7 +455,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
-
   funFactBox: {
     backgroundColor: "white",
     borderRadius: 12,
@@ -391,8 +463,11 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     marginBottom: 12,
   },
-  funFactTitle: { fontWeight: "700", marginBottom: 4, color: "#0F172A" },
-
+  funFactTitle: {
+    fontWeight: "700",
+    marginBottom: 4,
+    color: "#0F172A"
+  },
   activityItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -403,7 +478,9 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     marginBottom: 10,
   },
-  activityText: { color: "#1f2937" },
+  activityText: {
+    color: "#1f2937"
+  },
   avatar: {
     width: 28,
     height: 28,
@@ -418,9 +495,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#D1FAE5",
     marginRight: 10,
   },
-  thumb: { width: 40, height: 40, borderRadius: 6, marginLeft: 10 },
-  bold: { fontWeight: "700" },
-
+  thumb: {
+    width: 40,
+    height: 40,
+    borderRadius: 6,
+    marginLeft: 10
+  },
+  bold: {
+    fontWeight: "700"
+  },
   commentItem: {
     flexDirection: "row",
     backgroundColor: "white",
@@ -430,7 +513,6 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     marginBottom: 10,
   },
-
   input: {
     minHeight: 44,
     backgroundColor: "white",
@@ -439,17 +521,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
-
   sendBtn: {
     alignSelf: "flex-end",
-    paddingHorizontal: 18,
+    paddingHorizontal: 30,
     paddingVertical: 10,
     borderRadius: 10,
     backgroundColor: "#0F4B34",
     marginTop: 8,
   },
-  sendText: { color: "white", fontWeight: "700" },
-
+  sendText: {
+    color: "white",
+    fontWeight: "700"
+  },
   primaryBtn: {
     backgroundColor: "#0F4B34",
     borderRadius: 12,
@@ -457,5 +540,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 14,
   },
-  primaryText: { color: "white", fontWeight: "700" },
+  primaryText: {
+    color: "white",
+    fontWeight: "700"
+  },
 });

@@ -108,7 +108,12 @@ export default function ValidateModal({ onClose, challenge, onValidated }) {
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessible={true}
+      accessibilityRole="dialog"
+      accessibilityLabel="Validate your challenge"
+    >
       <View style={styles.modal}>
         <View style={styles.header}>
           {/* side placeholder car j'ai pas trouvé comment le mettre au milieu le text*/}
@@ -122,12 +127,18 @@ export default function ValidateModal({ onClose, challenge, onValidated }) {
                     setPreviewImage(null);
                   }
                 }}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
               >
                 <FontAwesome name="arrow-left" size={24} color="black" />
               </TouchableOpacity>
             )}
           </View>
-          <Text style={styles.headerText}>Validate the challenge</Text>
+          <Text style={styles.headerText} accessibilityRole="header">
+            Validate the challenge
+          </Text>
+
           {/* réinit les états au cas ou on ferme, pour que cela ne garde pas les photos uploadées/prises*/}
           <TouchableOpacity
             onPress={() => {
@@ -135,6 +146,9 @@ export default function ValidateModal({ onClose, challenge, onValidated }) {
               setShowCamera(false);
               onClose();
             }}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Close validation modal"
           >
             <FontAwesome name="close" size={24} color="black" />
           </TouchableOpacity>
@@ -146,7 +160,12 @@ export default function ValidateModal({ onClose, challenge, onValidated }) {
           <>
             {previewImage ? (
               <View style={styles.previewContainer}>
-                <Image source={{ uri: previewImage }} style={styles.image} />
+                <Image
+                  source={{ uri: previewImage }}
+                  style={styles.image}
+                  accessible={true}
+                  accessibilityLabel="Preview of your challenge photo"
+                />
                 {/* bouton pour valider*/}
                 <TouchableOpacity
                   style={styles.submitModal}
@@ -158,6 +177,9 @@ export default function ValidateModal({ onClose, challenge, onValidated }) {
                       onClose();
                     }
                   }}
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel="Submit photo to validate challenge"
                 >
                   <Text style={styles.submitModalText}> Submit </Text>
                 </TouchableOpacity>
@@ -173,10 +195,19 @@ export default function ValidateModal({ onClose, challenge, onValidated }) {
                 <TouchableOpacity
                   style={styles.button}
                   onPress={grantPermissionTakePicture}
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel="Open your phone's camera to take a photo of your challenge"
                 >
                   <Text style={styles.buttonText}>Open camera</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button2} onPress={pickPicture}>
+                <TouchableOpacity
+                  style={styles.button2}
+                  onPress={pickPicture}
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel="Upload a photo from your device"
+                >
                   <Text style={styles.buttonText2}>
                     Upload from your device
                   </Text>
@@ -197,12 +228,20 @@ export default function ValidateModal({ onClose, challenge, onValidated }) {
               />
             </View>
 
-            <TouchableOpacity style={styles.button} onPress={takePicture}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={takePicture}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Capture a photo of your challenge"
+            >
               <Text style={styles.buttonText}>Take a photo</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.button2}
               onPress={() => setShowCamera(false)}
+              accessibilityRole="button"
+              accessibilityLabel="Close the camera view"
             >
               <Text style={styles.buttonText2}>Cancel</Text>
             </TouchableOpacity>

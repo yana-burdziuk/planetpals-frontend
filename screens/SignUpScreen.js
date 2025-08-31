@@ -78,7 +78,7 @@ export default function SignUpScreen({ navigation }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: email.toLowerCase(),
-        username : username.toLowerCase(),
+        username: username.toLowerCase(),
         password,
         departmentId: selectedDepartment._id,
       }),
@@ -131,6 +131,8 @@ export default function SignUpScreen({ navigation }) {
           placeholder="your@email.com"
           placeholderTextColor="#999"
           autoCapitalize="none"
+          keyboardType="email-address"
+          autoFocus={true} // le curseur sera directement dans ce champs
         />
       </View>
       {/* Username */}
@@ -196,6 +198,8 @@ export default function SignUpScreen({ navigation }) {
                   key={index}
                   style={styles.option}
                   onPress={() => handleSelect(dept)}
+                  accessible={true}
+                  accessibilityLabel={`Select department ${dept.name}`}
                 >
                   <Text>{dept.name}</Text>
                 </TouchableOpacity>
@@ -210,6 +214,8 @@ export default function SignUpScreen({ navigation }) {
           style={styles.submitButton}
           activeOpacity={0.7} // un effet sur le bouton au clic (70% visible, 30% transparent)
           onPress={() => submitSignUpForm()}
+          accessible={true}
+          accessibilityLabel="Submit sign up form"
         >
           <Text style={styles.buttonText}>Submit</Text>
         </TouchableOpacity>
@@ -226,7 +232,7 @@ export default function SignUpScreen({ navigation }) {
       {/* Links */}
       <View style={styles.goBackContainer}>
         <Text style={styles.goBackText}>Already have an account?</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("TabNavigator")}>
+        <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
           <Text style={styles.backToSignIn}>Sign in to your account</Text>
         </TouchableOpacity>
       </View>

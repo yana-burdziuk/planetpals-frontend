@@ -6,11 +6,28 @@ export default function Header({ title = "PlanetPals", count = 0 }) {
     <View style={styles.headerContainer}>
       {/* bloc gauche : image + titre */}
       <View style={styles.leftContainer}>
-        <Image source={require("../assets/leaves.png")} style={styles.image} />
-        <Text style={styles.title}>{title}</Text>
+        <Image
+          source={require("../assets/leaves.png")}
+          style={styles.image}
+          accessible={false} // iOS, purement decoratif
+          importantForAccessibility="no" // Android
+        />
+        <Text
+          style={styles.title}
+          accessible={true}
+          accessibilityRole="header" // signaler à VoiceOver que c'est le titre de la page
+        >
+          {title}
+        </Text>
       </View>
       {/* bloc droite : compteur de points totaux */}
-      <Text style={styles.count}>{count} pts</Text>
+      <Text
+        style={styles.count}
+        accessible={true}
+        accessibilityLabel={`${count} total points`} // VoiceOver lira comme il faut au lieu de default 0pts
+      >
+        {count} pts
+      </Text>
     </View>
   );
 }

@@ -3,10 +3,10 @@ import { TouchableOpacity, StyleSheet, Text, View, Alert } from "react-native";
 import Header from "../components/Header";
 import Badge from "../components/Badge";
 import { useSelector, useDispatch } from "react-redux";
-import {logout, updatePoints} from "../reducers/user";
+import { logout, updatePoints } from "../reducers/user";
 import { useEffect } from "react";
 
-export default function ProfileScreen({navigation}) {
+export default function ProfileScreen({ navigation }) {
   const dispatch = useDispatch();
   // recup depuis le redux
   const user = useSelector((state) => state.user);
@@ -20,16 +20,18 @@ export default function ProfileScreen({navigation}) {
           headers: { Authorization: `Bearer ${user.token}` },
         });
         const data = await res.json();
-        
+
         if (data.result) {
           // on met à jour le Redux si nécessaire
           if (data.userTotalPoints !== currentPoints) {
-            dispatch(updatePoints({
-              userPoints: data.userTotalPoints,
-              userCO2: data.userTotalCo2SavingsPoints,
-              deptPoints: data.department.totalPoints,
-              deptCO2: data.department.totalCo2SavingsPoints
-            }));
+            dispatch(
+              updatePoints({
+                userPoints: data.userTotalPoints,
+                userCO2: data.userTotalCo2SavingsPoints,
+                deptPoints: data.department.totalPoints,
+                deptCO2: data.department.totalCo2SavingsPoints,
+              })
+            );
           }
         }
       } catch (error) {
@@ -55,7 +57,9 @@ export default function ProfileScreen({navigation}) {
 
   // on cherche le premier badge dont les points sont superieurs aux points currents de l'utilisateur
   // (les badges sont triés par points croissants)
-  const nextBadge = existingBadges.find((badge) => badge.points > currentPoints);
+  const nextBadge = existingBadges.find(
+    (badge) => badge.points > currentPoints
+  );
 
   //si on a trouvé un nextBadge, alors la jauge de progression doit viser son seuil
   //sinon si tous les badges sont déjà débloqués, on met totalPoints = currentPoints pour que la barre affiche 100%
@@ -87,11 +91,11 @@ export default function ProfileScreen({navigation}) {
         text: "Sign Out",
         onPress: () => {
           dispatch(logout());
-          //reset supprime l’historique de navigation 
+          //reset supprime l’historique de navigation
           // pour éviter que le user puisse revenir en arrière après le signout
           navigation.reset({
-          routes:[{name: "SignIn"}] 
-          })
+            routes: [{ name: "SignIn" }],
+          });
         },
         style: "destructive",
       },
@@ -106,12 +110,22 @@ export default function ProfileScreen({navigation}) {
       </View>
 
       {/* profile name */}
-      <View style={styles.profileNameContainer}>
+      <View
+        style={styles.profileNameContainer}
+        accessible={true}
+        accessibilityLabel={`Profile name: ${username}`}
+        accessibilityRole="text"
+      >
         <Text style={styles.profileNameText}>{username}</Text>
       </View>
 
       {/* barre de progression*/}
-      <View style={styles.progressContainer}>
+      <View
+        style={styles.progressContainer}
+        accessible={true}
+        accessibilityLabel={`Progress: ${currentPoints} out of ${totalPoints} points`}
+        accessibilityRole="progressbar"
+      >
         <View style={styles.progressBar}>
           <View style={[styles.bar, { width: `${progress * 100}%` }]} />
         </View>
@@ -140,11 +154,16 @@ export default function ProfileScreen({navigation}) {
       </View>
       {/* LogOut*/}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleSignOut}>
+        <TouchableOpacity
+          onPress={handleSignOut}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Sign out from your account"
+        >
           <Text style={styles.logOutText}>Sign Out</Text>
         </TouchableOpacity>
-        </View>
       </View>
+    </View>
   );
 }
 
@@ -154,7 +173,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f2f2f2ff",
     alignItems: "center",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   pageHeader: {
     width: "100%",
