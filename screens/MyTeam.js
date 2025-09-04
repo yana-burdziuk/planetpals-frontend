@@ -13,11 +13,13 @@ export default function MyTeam() {
   // c'est souvent utilisé poiur le fornt, afficher pull to refresh par exemple, considérée comme bonne pratique
   const [refreshing, setRefreshing] = useState(false);
 
+  const API_URL = "http://192.168.1.158:3000";
+
   const fetchTeamData = async () => {
     try {
       // en cours de chargement 
       setRefreshing(true);
-      const res = await fetch("http://192.168.1.158:3000/users/team", {
+      const res = await fetch(`${API_URL}/users/team`, {
         headers: { Authorization: `Bearer ${user.token}` },
       });
       const data = await res.json();
@@ -92,12 +94,12 @@ export default function MyTeam() {
             style={styles.statBox}
             accessible={true}
             accessibilityRole="text"
-            accessibilityLabel={`CO2 savings: ${departmentStats.totalCO2?.toFixed()} kilograms`}
+            accessibilityLabel={`CO2 savings: ${departmentStats.totalCO2?.toFixed(2)} kilograms`}
           >
             <Text style={styles.statTitle}>CO₂ savings</Text>
             <Text style={styles.statValue}>
           {/*.toFixed(2) round à 2 chiffres*/}
-              {departmentStats.totalCO2?.toFixed()} kg
+              {departmentStats.totalCO2?.toFixed(2)} kg
             </Text>
           </View>
         </View>

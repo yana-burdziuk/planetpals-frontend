@@ -17,12 +17,14 @@ export default function HomeScreen({ navigation }) {
   const [showValidateModal, setShowValidateModal] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
 
+  const API_URL = "http://192.168.1.158:3000";
+
   // on recupère les stats du dept au chargement de l'app
   useEffect(() => {
     const fetchDepartmentStats = async () => {
       try {
         const res = await fetch(
-          "http://192.168.1.158:3000/challenges/department-stats",
+          `${API_URL}/challenges/department-stats`,
           {
             headers: { Authorization: `Bearer ${user.token}` },
           }
@@ -52,7 +54,7 @@ export default function HomeScreen({ navigation }) {
     const fetchChallenges = async () => {
       try {
         const res = await fetch(
-          "http://192.168.1.158:3000/challenges/userChallenges",
+          `${API_URL}/challenges/userChallenges`,
           {
             headers: { Authorization: `Bearer ${user.token}` },
           }
@@ -98,7 +100,7 @@ export default function HomeScreen({ navigation }) {
 
     try {
       const res = await fetch(
-        `http://192.168.1.158:3000/challenges/${challenge.planningId}/submit`,
+        `${API_URL}/challenges/${challenge.planningId}/submit`,
         {
           method: "POST",
           headers: {
@@ -128,7 +130,7 @@ export default function HomeScreen({ navigation }) {
   const handleCancelSubmit = async (challenge) => {
     try {
       const res = await fetch(
-        `http://192.168.1.158:3000/challenges/${challenge.planningId}/submission`,
+        `${API_URL}/challenges/${challenge.planningId}/submission`,
         {
           method: "DELETE",
           headers: {
@@ -173,11 +175,11 @@ export default function HomeScreen({ navigation }) {
           style={styles.totalCO2Container}
           accessible={true}
           accessibilityRole="summary"
-          accessibilityLabel={`Total CO2 saved by your department so far: ${user.departmentStats.totalCO2?.toFixed()} kg`}
+          accessibilityLabel={`Total CO2 saved by your department so far: ${user.departmentStats.totalCO2?.toFixed(2)} kg`}
         >
           <Text style={styles.CO2ContainerText1}>
             {/*.toFixed(2) round à 2 chiffres*/}
-            {user.departmentStats.totalCO2?.toFixed()} kg
+            {user.departmentStats.totalCO2?.toFixed(2)} kg
           </Text>
           <Text style={styles.CO2ContainerText2}>
             of CO₂ saved by your department so far

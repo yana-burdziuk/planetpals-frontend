@@ -124,7 +124,7 @@ export default function ChallengeScreen({ route }) {
       const data = await res.json();
       if (data.result) {
         // mise à jour des points du user et du dept
-        dispatch(updatePoints(data.result));
+        dispatch(updatePoints(data.pointsUpdate));
         dispatch(
           updateChallengeStatus({
             planningId: challenge.planningId,
