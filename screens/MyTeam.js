@@ -12,7 +12,6 @@ export default function MyTeam() {
   //refreshing est un state local qui sert à indiquer si la donnée est en train d’être chargée
   // c'est souvent utilisé poiur le fornt, afficher pull to refresh par exemple, considérée comme bonne pratique
   const [refreshing, setRefreshing] = useState(false);
-
   const API_URL = "http://192.168.1.158:3000";
 
   const fetchTeamData = async () => {
