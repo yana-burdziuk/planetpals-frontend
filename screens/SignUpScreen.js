@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View,
@@ -89,13 +89,24 @@ export default function SignUpScreen({ navigation }) {
         if (data.result) {
           // sauvegarder le token de user en local
           await AsyncStorage.setItem("userToken", data.token);
+          const me = await fetch(`${API_URL}/users/me`, {
+            headers: {
+              Authorization: `Bearer ${data.token}`,
+            },
+          });
+
+          const meData = await me.json();
+
           // update Redux store avec le user conecté
           dispatch(
             loginSuccess({
-              username: data.username,
-              email: data.email,
+              username: meData.username,
+              email: meData.email,
               token: data.token,
-              currentPoints: data.currentPoints ?? 0,
+              departmentId: meData.department?._id,
+              deptName: meData.department?.name,
+              currentPoints: meData.userTotalPoints ?? 0,
+              departmentCO2: meData.department.totalCo2SavingsPoints ?? 0,
             })
           );
           setTimeout(() => {

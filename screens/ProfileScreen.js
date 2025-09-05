@@ -1,5 +1,4 @@
-import React from "react";
-import { TouchableOpacity, StyleSheet, Text, View, Alert } from "react-native";
+import { TouchableOpacity, StyleSheet, Text, View, Alert, ScrollView } from "react-native";
 import Header from "../components/Header";
 import Badge from "../components/Badge";
 import { useSelector, useDispatch } from "react-redux";
@@ -108,7 +107,10 @@ export default function ProfileScreen({ navigation }) {
       <View style={styles.pageHeader}>
         <Header title="PlanetPals" count={currentPoints} />
       </View>
-
+   <ScrollView 
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
       {/* profile name */}
       <View
         style={styles.profileNameContainer}
@@ -161,8 +163,9 @@ export default function ProfileScreen({ navigation }) {
           accessibilityLabel="Sign out from your account"
         >
           <Text style={styles.logOutText}>Sign Out</Text>
-        </TouchableOpacity>
-      </View>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -177,6 +180,10 @@ const styles = StyleSheet.create({
   },
   pageHeader: {
     width: "100%",
+  },
+  scrollContent: {
+  alignItems: "center",
+  paddingBottom: 20,
   },
   profileNameContainer: {
     width: 150,
