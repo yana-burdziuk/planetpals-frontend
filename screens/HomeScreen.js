@@ -24,12 +24,13 @@ export default function HomeScreen({ navigation }) {
     const fetchDepartmentStats = async () => {
       try {
         const res = await fetch(
-          `${API_URL}/challenges/department-stats`,
+          `${API_URL}/depts/department-stats`,
           {
             headers: { Authorization: `Bearer ${user.token}` },
           }
         );
         const data = await res.json();
+
         if (data.result) {
           dispatch(
             updateDepartmentStats({

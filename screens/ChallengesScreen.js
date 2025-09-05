@@ -8,6 +8,8 @@ import {
   TextInput,
   TouchableOpacity,
   SafeAreaView,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import Header from "../components/Header"; // header maison
 import ValidateModal from "../components/ValidateModal";
@@ -229,6 +231,10 @@ export default function ChallengeScreen({ route }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+       <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <Header title="Details" count={user.currentPoints} />
 
       <ScrollView
@@ -393,7 +399,8 @@ export default function ChallengeScreen({ route }) {
             setShowValidateModal(false);
           }}
         />
-      )}
+        )}
+         </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -16,6 +16,8 @@ export default function ValidateModal({ onClose, challenge, onValidated }) {
 
   const dispatch = useDispatch();
 
+  const API_URL = "http://192.168.1.158:3000";
+
   // on passe par une fonction et non useEffect car il faut
   // que la demande de permission soit faite quand on clique
   // sur le take a photo et non au montage
@@ -53,7 +55,7 @@ export default function ValidateModal({ onClose, challenge, onValidated }) {
         name: "photo.jpg",
         type: "image/jpeg",
       });
-      const response = await fetch("http://localhost:3000/photo/upload", {
+      const response = await fetch(`${API_URL}/photo/upload`, {
         method: "POST",
         body: formData,
       });
@@ -90,7 +92,7 @@ export default function ValidateModal({ onClose, challenge, onValidated }) {
         type: "image/jpeg",
       });
       try {
-        const response = await fetch("http://localhost:3000/photo/upload", {
+        const response = await fetch(`${API_URL}/photo/upload`, {
           method: "POST",
           body: formData,
         });
