@@ -110,7 +110,7 @@ export default function ProfileScreen({ navigation }) {
    <ScrollView 
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
-    >
+      >
       {/* profile name */}
       <View
         style={styles.profileNameContainer}
@@ -119,7 +119,8 @@ export default function ProfileScreen({ navigation }) {
         accessibilityRole="text"
       >
         <Text style={styles.profileNameText}>{username}</Text>
-      </View>
+        </View>
+     <Text style={styles.subtitle}>All points earned since you joined PlanetPals </Text>
 
       {/* barre de progression*/}
       <View
@@ -201,6 +202,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     flexWrap: "wrap",
   },
+  subtitle: {
+  fontSize: 14,
+  color: "#0F172A",
+  textAlign: "center",
+  marginTop: 4,
+},
   progressContainer: {
     flexDirection: "row",
     alignItems: "center",
