@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { API_URL_PROD } from "@env";
 import {
   View,
   Text,
@@ -15,9 +16,6 @@ import Header from "../components/Header"; // header maison
 import ValidateModal from "../components/ValidateModal";
 import { useDispatch, useSelector } from "react-redux";
 import { updatePoints, updateChallengeStatus } from "../reducers/user";
-
-/** À ajuster selon mon réseau local quand je change d’endroit */
-const API_URL = "http://192.168.1.158:3000";
 
 export default function ChallengeScreen({ route }) {
   // l’ID du challenge (planningId) passé depuis HomeScreen
@@ -57,7 +55,7 @@ export default function ChallengeScreen({ route }) {
       try {
         setLoadingActivity(true);
         const res = await fetch(
-          `${API_URL}/challenges/${challengeId}/activity`
+          `${API_URL_PROD}/challenges/${challengeId}/activity`
         );
         const data = await res.json();
         if (data.result) {
@@ -85,7 +83,7 @@ export default function ChallengeScreen({ route }) {
       try {
         setLoadingComments(true);
         const res = await fetch(
-          `${API_URL}/challenges/${challengeId}/comments`
+          `${API_URL_PROD}/challenges/${challengeId}/comments`
         );
         const data = await res.json();
         if (data.result) {
@@ -112,7 +110,7 @@ export default function ChallengeScreen({ route }) {
 
     try {
       const res = await fetch(
-        `${API_URL}/challenges/${challenge.planningId}/submit`,
+        `${API_URL_PROD}/challenges/${challenge.planningId}/submit`,
         {
           method: "POST",
           headers: {
@@ -138,7 +136,7 @@ export default function ChallengeScreen({ route }) {
         if (photoUrl) {
           try {
             const res = await fetch(
-              `${API_URL}/challenges/${challengeId}/activity`
+              `${API_URL_PROD}/challenges/${challengeId}/activity`
             );
             const data = await res.json();
             if (data.result) setActivity(data.activity);
@@ -157,7 +155,7 @@ export default function ChallengeScreen({ route }) {
     if (!challenge) return;
     try {
       const res = await fetch(
-        `${API_URL}/challenges/${challenge.planningId}/submission`,
+        `${API_URL_PROD}/challenges/${challenge.planningId}/submission`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${user.token}` },
@@ -189,7 +187,7 @@ export default function ChallengeScreen({ route }) {
 
     try {
       setPosting(true);
-      const res = await fetch(`${API_URL}/challenges/${challengeId}/comments`, {
+      const res = await fetch(`${API_URL_PROD}/challenges/${challengeId}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -204,7 +202,7 @@ export default function ChallengeScreen({ route }) {
         setComment("");
         // je recharge la liste pour voir mon commentaire
         const res = await fetch(
-          `${API_URL}/challenges/${challengeId}/comments`
+          `${API_URL_PROD}/challenges/${challengeId}/comments`
         );
         const data = await res.json();
         if (data.result) setComments(data.comments);

@@ -1,4 +1,5 @@
 import { TouchableOpacity, StyleSheet, Text, View, Alert, ScrollView } from "react-native";
+import { API_URL_PROD } from "@env";
 import Header from "../components/Header";
 import Badge from "../components/Badge";
 import { useSelector, useDispatch } from "react-redux";
@@ -15,7 +16,7 @@ export default function ProfileScreen({ navigation }) {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const res = await fetch("http://192.168.1.158:3000/users/me", {
+        const res = await fetch(`http://${API_URL_PROD}/users/me`, {
           headers: { Authorization: `Bearer ${user.token}` },
         });
         const data = await res.json();

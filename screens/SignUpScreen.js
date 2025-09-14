@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { API_URL_PROD } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View,
@@ -12,8 +13,6 @@ import {
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../reducers/user";
 
-const API_URL = "http://192.168.1.158:3000"; // téléphone physique
-
 export default function SignUpScreen({ navigation }) {
   const dispatch = useDispatch();
   const [departments, setDepartments] = useState([]);
@@ -26,7 +25,7 @@ export default function SignUpScreen({ navigation }) {
   const [loading, setLoading] = useState(false); // spinner
   // fonction pour recuperer tous les departements actifs
   const loadDepts = () => {
-    fetch(`${API_URL}/depts`)
+    fetch(`${API_URL_PROD}/depts`)
       .then((response) => response.json())
       .then((data) => {
         if (data.result) {
@@ -73,7 +72,7 @@ export default function SignUpScreen({ navigation }) {
     }
     setLoading(true);
 
-    fetch(`${API_URL}/users/signup`, {
+    fetch(`${API_URL_PROD}/users/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -89,7 +88,7 @@ export default function SignUpScreen({ navigation }) {
         if (data.result) {
           // sauvegarder le token de user en local
           await AsyncStorage.setItem("userToken", data.token);
-          const me = await fetch(`${API_URL}/users/me`, {
+          const me = await fetch(`${API_URL_PROD}/users/me`, {
             headers: {
               Authorization: `Bearer ${data.token}`,
             },

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { API_URL_PROD } from "@env";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import Header from "../components/Header";
 import { useSelector, useDispatch } from "react-redux";
@@ -12,13 +13,12 @@ export default function MyTeam() {
   //refreshing est un state local qui sert à indiquer si la donnée est en train d’être chargée
   // c'est souvent utilisé poiur le fornt, afficher pull to refresh par exemple, considérée comme bonne pratique
   const [refreshing, setRefreshing] = useState(false);
-  const API_URL = "http://192.168.1.158:3000";
 
   const fetchTeamData = async () => {
     try {
       // en cours de chargement 
       setRefreshing(true);
-      const res = await fetch(`${API_URL}/users/team`, {
+      const res = await fetch(`${API_URL_PROD}/users/team`, {
         headers: { Authorization: `Bearer ${user.token}` },
       });
       const data = await res.json();

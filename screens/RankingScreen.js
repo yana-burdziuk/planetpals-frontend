@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { API_URL_PROD } from "@env";
 import {
   View,
   Text,
@@ -9,8 +10,6 @@ import {
 import Header from "../components/Header";
 import { useSelector } from "react-redux";
 
-const API_URL = "http://192.168.1.158:3000";
-
 export default function RankingScreen() {
   const user = useSelector((state) => state.user);
   const [departments, setDepartments] = useState([]);
@@ -19,7 +18,7 @@ export default function RankingScreen() {
   const fetchDepartments = async () => {
     try {
       setRefreshing(true);
-      const res = await fetch(`${API_URL}/depts`);
+      const res = await fetch(`${API_URL_PROD}/depts`);
       const data = await res.json();
 
       if (data.result) {
