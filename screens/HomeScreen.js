@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { API_URL_PROD } from "@env";
 import { StyleSheet, Text, View, ScrollView } from "react-native";
 import Header from "../components/Header";
 import ChallengeCard from "../components/ChallengeCard";
@@ -17,14 +18,12 @@ export default function HomeScreen({ navigation }) {
   const [showValidateModal, setShowValidateModal] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
 
-  const API_URL = "http://192.168.1.158:3000";
-
   // on recupère les stats du dept au chargement de l'app
   useEffect(() => {
     const fetchDepartmentStats = async () => {
       try {
         const res = await fetch(
-          `${API_URL}/depts/department-stats`,
+          `${API_URL_PROD}/depts/department-stats`,
           {
             headers: { Authorization: `Bearer ${user.token}` },
           }
@@ -55,7 +54,7 @@ export default function HomeScreen({ navigation }) {
     const fetchChallenges = async () => {
       try {
         const res = await fetch(
-          `${API_URL}/challenges/userChallenges`,
+          `${API_URL_PROD}/challenges/userChallenges`,
           {
             headers: { Authorization: `Bearer ${user.token}` },
           }
@@ -101,7 +100,7 @@ export default function HomeScreen({ navigation }) {
 
     try {
       const res = await fetch(
-        `${API_URL}/challenges/${challenge.planningId}/submit`,
+        `${API_URL_PROD}/challenges/${challenge.planningId}/submit`,
         {
           method: "POST",
           headers: {
@@ -131,7 +130,7 @@ export default function HomeScreen({ navigation }) {
   const handleCancelSubmit = async (challenge) => {
     try {
       const res = await fetch(
-        `${API_URL}/challenges/${challenge.planningId}/submission`,
+        `${API_URL_PROD}/challenges/${challenge.planningId}/submission`,
         {
           method: "DELETE",
           headers: {

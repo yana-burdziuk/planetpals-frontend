@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { API_URL_PROD } from "@env";
 import {
   View,
   Text,
@@ -11,8 +12,6 @@ import { useDispatch } from "react-redux";
 import { loginSuccess } from "../reducers/user"; // pour remplir le slice user
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://192.168.1.158:3000"; // téléphone physique
-
 export default function SignInScreen({ navigation }) {
   const dispatch = useDispatch();
   const [credentials, setCredentials] = useState("");
@@ -24,7 +23,7 @@ export default function SignInScreen({ navigation }) {
       alert("All fields are mandatory");
       return;
     }
-    fetch(`${API_URL}/users/signin`, {
+    fetch(`${API_URL_PROD}/users/signin`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -39,7 +38,7 @@ export default function SignInScreen({ navigation }) {
       }
       await AsyncStorage.setItem("userToken", data.token);
       // on appelle users/me pour recuperer l'état complet de user côté DB (points etc )
-      const me = await fetch(`${API_URL}/users/me`, {
+      const me = await fetch(`${API_URL_PROD}/users/me`, {
         headers: {
           Authorization: `Bearer ${data.token}`,
         },

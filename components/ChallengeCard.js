@@ -1,4 +1,3 @@
-import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 
@@ -46,7 +45,7 @@ export default function ChallengeCard({
             <Text style={styles.pointsText}> {points} pts</Text>
           </View>
           {/* quantité de CO2 dynamisée*/}
-          <Text style={styles.CO2Text}> {CO2} kg of CO2 saved </Text>
+          <Text style={styles.CO2Text}> {CO2} kg of CO₂ saved </Text>
         </View>
       </TouchableOpacity>
     </View>
